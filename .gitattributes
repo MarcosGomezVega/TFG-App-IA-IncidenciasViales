@@ -1,0 +1,39 @@
+# Configuration to ensure Git handles line endings correctly:
+# For text files (any file that can be edited as text)
+* text=auto
+
+# Set the default behavior to automatically normalize line endings
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.java text eol=lf
+*.xml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+*.properties text eol=lf
+*.sql text eol=lf
+*.txt text eol=lf
+*.log text eol=lf
+*.conf text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.bat text eol=crlf
+
+# Editor config files, like .editorconfig, should not have any line ending conversion
+.editorconfig -text
+
+# Binary files such as images and executables should remain unchanged in terms of line endings
+*.jpg binary
+*.png binary
+*.exe binary
+*.dll binary
+

@@ -1,0 +1,49 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files (VS Code, Sublime, etc.)
+.vscode/
+.idea/
+
+# Virtual environments (Python, Node.js, etc.)
+venv/
+env/
+*.pyc
+__pycache__/
+node_modules/
+
+# Build or compilation output files
+/dist/
+/build/
+/out/
+/bin/
+/obj/
+
+# Local database files
+*.sqlite
+*.db
+
+# Log files
+*.log
+
+# Sensitive files
+*.env
+*.pem
+*.key
+
+# Temporary files
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Other system-specific files that may be generated on different systems
+*.class
+*.jar
+*.war
+*.ear
+
+# Version control system files
+.git/
