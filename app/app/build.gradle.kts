@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.incidenciasviales"
+    namespace = "com.example.myapplication"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.incidenciasviales"
+        applicationId = "com.example.myapplication"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

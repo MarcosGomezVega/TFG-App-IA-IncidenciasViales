@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "IncidenciasViales"
+rootProject.name = "My Application"
 include(":app")
