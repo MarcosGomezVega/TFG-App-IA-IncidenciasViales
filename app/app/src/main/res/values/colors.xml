@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+  <!-- Colores básicos -->
+  <color name="black">#FF000000</color>
+  <color name="white">#FFFFFFFF</color>
+
+  <!-- Paleta basada en Material 3 tonos morados -->
+  <color name="colorPrimary">#6750A4</color> <!-- Morado principal -->
+  <color name="onPrimary">#FFFFFF</color> <!-- Texto sobre el color primario -->
+  <color name="primaryContainer">#EADDFF</color> <!-- Fondo suave morado -->
+  <color name="onPrimaryContainer">#21005D</color> <!-- Texto sobre fondo primario container -->
+
+  <color name="colorSecondary">#625B71</color> <!-- Secundario gris-morado -->
+  <color name="onSecondary">#FFFFFF</color> <!-- Texto sobre secundario -->
+  <color name="secondaryContainer">#E8DEF8</color> <!-- Fondo suave secundario -->
+  <color name="onSecondaryContainer">#1D192B</color> <!-- Texto sobre container secundario -->
+
+  <color name="background">#F6F2FA</color> <!-- Fondo general -->
+  <color name="onBackground">#1C1B1F</color> <!-- Texto sobre fondo -->
+
+  <color name="surface">#FFFBFE</color> <!-- Superficies como cards, sheets -->
+  <color name="onSurface">#1C1B1F</color> <!-- Texto sobre superficies -->
 </resources>
