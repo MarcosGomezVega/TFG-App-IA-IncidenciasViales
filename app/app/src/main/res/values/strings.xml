@@ -1,17 +1,21 @@
 <resources>
-  <string name="app_name">My Application</string>
-  <string name="title_activity_login">Login</string>
-  <string name="prompt_email">Email</string>
-  <string name="prompt_password">Password</string>
-  <string name="action_sign_in">Sign in or register</string>
-  <string name="action_sign_in_short">Sign in</string>
-  <string name="welcome">"Welcome !"</string>
-  <string name="invalid_username">Not a valid username</string>
-  <string name="invalid_password">Password must be >5 characters</string>
-  <string name="login_failed">"Login failed"</string>
-  <string name="login">"Login"</string>
-  <string name="create_account">"Create Account"</string>
-  <string name="passwd">"Password"</string>
-  <string name="email">"Email"</string>
-
+    <string name="app_name">My Application</string>
+    <string name="title_activity_login">Login</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="login">"Login"</string>
+    <string name="create_account">"Create Account"</string>
+    <string name="passwd">"Password"</string>
+    <string name="email">"Email"</string>
+    <string name="user_name">"User name"</string>
+    <string name="confirm_password">"Confirm Password"</string>
+    <string name="passwd_dont_match">"Password don't match"</string>
+    <string name="gaps_empty">"Please complete all the fields"</string>
+    <string name="accept_conditions">"YYou must accept the terms and conditions of the app to register"</string>
+    <string name="acept">"Acept"</string>
+    <string name="error">"Error"</string>
 </resources>
