@@ -1,21 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<androidx.constraintlayout.widget.ConstraintLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:padding="24dp"
+  tools:context=".MainActivity">
 
   <TextView
-    android:id="@+id/textView"
+    android:id="@+id/titleText"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="Main"
-    app:layout_constraintBottom_toBottomOf="parent"
+    android:text="@string/name_app"
+    android:textSize="24sp"
+    android:textStyle="bold"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:layout_marginTop="16dp"/>
+
+  <ImageButton
+    android:id="@+id/btnImagePreview"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    android:layout_marginStart="32dp"
+    android:layout_marginTop="32dp"
+    android:layout_marginEnd="32dp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    app:layout_constraintTop_toBottomOf="@+id/titleText" />
+
+  <Button
+    android:id="@+id/btnTakePhoto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="32dp"
+    android:layout_marginTop="32dp"
+    android:layout_marginEnd="32dp"
+    android:backgroundTint="@color/colorPrimary"
+    android:drawableLeft="@drawable/baseline_add_a_photo_24"
+    android:text="@string/take_photo"
+    android:textColor="@color/onPrimary"
+    android:textSize="16sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/btnImagePreview" />
+
+  <Button
+    android:id="@+id/btnSendIncident"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="32dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="32dp"
+    android:backgroundTint="@color/colorPrimary"
+    android:text="@string/send_incident"
+    android:drawableLeft="@drawable/send"
+    android:textColor="@color/onPrimary"
+    android:textSize="16sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/btnTakePhoto" />
+
+  <Button
+    android:id="@+id/btnViewIncidences"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="32dp"
+    android:layout_marginTop="32dp"
+    android:layout_marginEnd="32dp"
+    android:backgroundTint="@color/colorSecondary"
+    android:text="@string/look_incident"
+    android:textColor="@color/onSecondary"
+    android:textSize="16sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="1.0"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/btnSendIncident" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-

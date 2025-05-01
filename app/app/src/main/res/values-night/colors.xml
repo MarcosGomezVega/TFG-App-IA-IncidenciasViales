@@ -3,15 +3,15 @@
   <color name="black">#FFFFFFFF</color>
   <color name="white">#FF000000</color>
 
-  <color name="colorPrimary">#382761</color>
-  <color name="onPrimary">#FFFFFF</color>
+  <color name="colorPrimary">#BAA5F1</color>
+  <color name="onPrimary">#000000</color>
   <color name="primaryContainer">#241349</color>
   <color name="onPrimaryContainer">#EADDFF</color>
 
-  <color name="colorSecondary">#DBB6ED</color>
-  <color name="onSecondary">#000000</color>
-  <color name="secondaryContainer">#D1C4E9</color>
-  <color name="onSecondaryContainer">#311B92</color>
+  <color name="colorSecondary">#4C4A4E</color>
+  <color name="onSecondary">#FFFFFF</color>
+  <color name="secondaryContainer">#2A2731</color>
+  <color name="onSecondaryContainer">#E0E0E0</color>
 
   <color name="background">#1C1B1F</color>
   <color name="onBackground">#E6E1E5</color>
