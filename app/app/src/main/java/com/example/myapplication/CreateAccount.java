@@ -13,12 +13,20 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.view.View;
 
+import com.example.myapplication.database.DBManager;
+
+
 public class CreateAccount extends AppCompatActivity {
+
+  private DBManager dbManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_create_account);
+
+    dbManager = new DBManager(this);
+
 
     Button button_CreateAcount = findViewById(R.id.btnCreateAccount);
 
@@ -54,8 +62,16 @@ public class CreateAccount extends AppCompatActivity {
       builder.setPositiveButton(Html.fromHtml("<font color='#6750A4'>" + getString(R.string.acept) + "</font>"), null);
       builder.show();
     } else {
-      Intent intent = new Intent(CreateAccount.this, Login.class);
-      startActivity(intent);
+      boolean insertado = dbManager.insertarUsuario(user_name, email, password);
+
+      if (insertado) {
+        Toast.makeText(CreateAccount.this, Html.fromHtml("<font color='#00C853'><b>Cuenta creada con éxito</b></font>"), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(CreateAccount.this, Login.class);
+        startActivity(intent);
+        finish();
+      } else {
+        Toast.makeText(CreateAccount.this, Html.fromHtml("<font color='#FF0000'><b>Error: El correo ya está registrado</b></font>"), Toast.LENGTH_SHORT).show();
+      }
     }
   }
 }
