@@ -2,73 +2,200 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.content.Intent;
-import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
-import android.widget.ImageButton;
+import android.text.Html;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
+
+import com.example.myapplication.database.DBManager;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
+/**
+ * Main activity that allows the user to capture a photo using the device camera.
+ * The photo is saved in external storage and displayed in an ImageView.
+ *
+ * @author Marcos Gomez Vega
+ * @version 1.0
+ */
 public class MainActivity extends AppCompatActivity {
 
   private static final int REQUEST_IMAGE_CAPTURE = 1;
-  private Uri photoUri;
+  private static final int REQUEST_CAMERA_PERMISSION = 100;
+  private Button btnTakePhoto;
+  private Button btnSendIncident;
+  private Button btnViewIncident;
+  private ImageView imageView;
+  private TextView imageViewTipoIncidencia;
+  private TextView imageViewLocalizacion;
+  private String currentPhotoPath;
+  private Bitmap currentBitmap;
+  private DBManager dbManager;
 
+  /**
+   * Called when the activity is first created.
+   * Initializes the UI and sets the button click listener.
+   *
+   * @param savedInstanceState the saved instance state bundle
+   */
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    // Inicializar el ImageButton
-    ImageButton btnTakePhoto = findViewById(R.id.btnTakePhoto);
+    btnTakePhoto = findViewById(R.id.btnTakePhoto);
+    btnSendIncident = findViewById(R.id.btnSendIncident);
+    btnViewIncident = findViewById(R.id.btnViewIncidences);
+    imageView = findViewById(R.id.imagePreview);
+    imageViewTipoIncidencia = findViewById(R.id.textDetectedType);
+    imageViewLocalizacion = findViewById(R.id.textLocation);
 
-    // Configurar el listener del botón para abrir la cámara
+    dbManager = new DBManager(this);
+
     btnTakePhoto.setOnClickListener(v -> {
-      openCamera();
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+        != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+      } else {
+        openCamera();
+      }
+    });
+
+    btnSendIncident.setOnClickListener(v -> {
+      String tipoIncidencia = imageViewTipoIncidencia.getText().toString();
+      String localizacion = imageViewLocalizacion.getText().toString();
+      String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+      int usuarioId = dbManager.obtenerIdUsuario("marcosgomezvegaportillo@gmail.com");
+
+      Toast.makeText(this, getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show();
+
+      dbManager.insertarIncidencia(usuarioId, tipoIncidencia, localizacion, currentBitmap, fecha);
+      imageViewTipoIncidencia.setText("");
+      imageViewLocalizacion.setText("");
+      imageView.setImageResource(0);
+      currentBitmap = null;
+
+    });
+
+    btnViewIncident.setOnClickListener(v ->{
+      Intent intent = new Intent(MainActivity.this, IncidentActivity.class);
+      startActivity(intent);
     });
   }
 
-  // Método para abrir la cámara
+  /**
+   * Opens the camera app to capture an image and saves the image to a file.
+   * Uses FileProvider to securely share the file URI with the camera app.
+   */
   private void openCamera() {
-    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-    // Verificar que hay una aplicación de cámara para manejar el intent
-    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-      // Crear un archivo temporal para almacenar la foto
+    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    if (intent.resolveActivity(getPackageManager()) != null) {
+      File photoFile;
       try {
-        photoUri = createImageUri(); // Debes crear una URI de almacenamiento
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);  // Enviar la URI para guardar la foto
-        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-      } catch (Exception e) {
-        e.printStackTrace();
-        Toast.makeText(this, "Error al acceder a la cámara", Toast.LENGTH_SHORT).show();
+        photoFile = createImageFile();
+      } catch (IOException ex) {
+        Toast.makeText(this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.error_creating_image) + "</b></font>"), Toast.LENGTH_SHORT).show();
+        return;
       }
-    } else {
-      Toast.makeText(this, "No hay aplicación de cámara disponible", Toast.LENGTH_SHORT).show();
+
+      if (photoFile != null) {
+        Uri photoURI = FileProvider.getUriForFile(
+          this,
+          "com.example.myapplication.fileprovider",
+          photoFile
+        );
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+      }
     }
   }
 
-  // Método para crear una URI temporal para almacenar la imagen
-  private Uri createImageUri() {
-    // Crea un archivo temporal para la foto y devuelve la URI
-    // Aquí usarías un FileProvider o la API correspondiente en Android 11+ (Scoped Storage)
-    // Este es solo un ejemplo simplificado, asegúrate de manejar correctamente el almacenamiento
-    return Uri.fromFile(new File(getExternalFilesDir(null), "photo.jpg"));
+  /**
+   * Callback for the result from requesting permissions.
+   * If permission is granted, opens the camera.
+   *
+   * @param requestCode  the request code passed in requestPermissions
+   * @param permissions  the requested permissions
+   * @param grantResults the grant results for the corresponding permissions
+   */
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode == REQUEST_CAMERA_PERMISSION) {
+      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        openCamera();
+      } else {
+        Toast.makeText(this, getString(R.string.camera_permision_fail), Toast.LENGTH_SHORT).show();
+      }
+    }
   }
 
+  /**
+   * Receives the result from the camera activity.
+   * If the result is OK, decodes the image file and sets it to the ImageView.
+   *
+   * @param requestCode the integer request code originally supplied
+   * @param resultCode  the integer result code returned by the child activity
+   * @param data        an Intent which can return result data to the caller
+   */
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-
     if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-      // La foto fue tomada exitosamente, ahora puedes hacer algo con la imagen
-      // Por ejemplo, mostrarla en una ImageView
-      // imageView.setImageURI(photoUri);  // Si tienes una ImageView para mostrar la foto
+      Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+      imageView.setImageBitmap(bitmap);
+      currentBitmap = bitmap;
+      //Valores por defecto
+      imageViewTipoIncidencia.setText("Asfalto roto");
+      imageViewLocalizacion.setText("Calle Falsa 123");
+
+
     }
   }
+
+  /**
+   * Creates a temporary image file in the app's private external storage.
+   * The path to the file is saved in currentPhotoPath.
+   *
+   * @return the created image file
+   * @throws IOException if the file could not be created
+   */
+  private File createImageFile() throws IOException {
+    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+    String imageFileName = "JPEG_" + timeStamp + "_";
+    File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    File image = File.createTempFile(
+      imageFileName,
+      ".jpg",
+      storageDir
+    );
+
+    currentPhotoPath = image.getAbsolutePath();
+    Log.d("RutaImagen", "Ruta de la imagen: " + currentPhotoPath);
+    return image;
+  }
+
 }

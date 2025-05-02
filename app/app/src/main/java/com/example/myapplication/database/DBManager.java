@@ -4,15 +4,20 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.widget.Toast;
+
+import java.io.ByteArrayOutputStream;
 
 public class DBManager {
   private DBConexion dbConexion;
   private SQLiteDatabase db;
+  private Context context;
 
   public DBManager(Context context) {
+    this.context = context;
     dbConexion = new DBConexion(context);
   }
-
 
   public void open() {
     db = dbConexion.getWritableDatabase();
@@ -23,12 +28,12 @@ public class DBManager {
 
   public boolean insertarUsuario(String nombre, String email, String password) {
     open();
-    ContentValues valores = new ContentValues();
-    valores.put("nombre", nombre);
-    valores.put("email", email);
-    valores.put("password", password);
+    ContentValues values = new ContentValues();
+    values.put("nombre", nombre);
+    values.put("email", email);
+    values.put("password", password);
 
-    long result = db.insert("usuarios", null, valores);
+    long result = db.insert("usuarios", null, values);
     close();
     return result != -1;
   }
@@ -52,5 +57,36 @@ public class DBManager {
     boolean hayDatos = cursor.getCount() > 0;
     cursor.close();
     return hayDatos;
+  }
+
+  public int obtenerIdUsuario(String email) {
+    open();
+    Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ?", new String[]{email});
+    int userId = -1;
+    if (cursor.moveToFirst()) {
+      userId = cursor.getInt(0);
+    }
+    cursor.close();
+    close();
+    return userId;
+  }
+
+  public boolean insertarIncidencia(int usuarioId, String tipoIncidencia, String localizacion, Bitmap foto, String fecha) {
+    open();
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    foto.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+    byte[] fotoBytes = byteArrayOutputStream.toByteArray();
+
+    ContentValues values = new ContentValues();
+    values.put("usuario_id", usuarioId);
+    values.put("tipo_incidencia", tipoIncidencia);
+    values.put("localizacion", localizacion);
+    values.put("foto", fotoBytes);
+    values.put("fecha", fecha);
+
+    long result = db.insert("incidencias", null, values);
+    close();
+    return result != -1;
   }
 }

@@ -22,7 +22,18 @@ public class DBConexion extends SQLiteOpenHelper {
       "password TEXT NOT NULL" +
       ");";
 
+    String CREATE_TABLE_INCIDENT = "CREATE TABLE incidencias ("+
+      "id INTEGER PRIMARY KEY AUTOINCREMENT,"+
+      "usuario_id INTEGER NOT NULL,"+
+      "tipo_incidencia TEXT NOT NULL,"+
+      "localizacion TEXT NOT NULL,"+
+      "foto BLOB NOT NULL,"+
+      "fecha TEXT,"+
+      "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"+
+    ");";
+
     db.execSQL(CREATE_TABLE_USUARIOS);
+    db.execSQL(CREATE_TABLE_INCIDENT);
 
   }
 
