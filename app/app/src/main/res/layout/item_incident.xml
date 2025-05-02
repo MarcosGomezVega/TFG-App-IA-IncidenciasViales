@@ -13,13 +13,19 @@
     android:layout_width="0dp"
     android:layout_weight="2"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:text="Tipo" />
+    android:text="Tipo de incidencia"
+    android:textSize="16sp"
+    android:textColor="@color/colorPrimary"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:paddingEnd="8dp"/>
 
   <Button
     android:id="@+id/btnVer"
     android:layout_width="0dp"
     android:layout_weight="1"
     android:layout_height="wrap_content"
-    android:text="Ver" />
+    android:text="Ver"
+    android:backgroundTint="@color/colorPrimary"
+    android:textColor="@color/onPrimary"/>
 </LinearLayout>

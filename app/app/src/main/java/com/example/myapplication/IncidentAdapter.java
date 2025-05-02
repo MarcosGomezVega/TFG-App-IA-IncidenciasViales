@@ -24,7 +24,6 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
   @Override
   public IncidentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    // Inflar el layout de la fila
     View view = LayoutInflater.from(context).inflate(R.layout.item_incident, parent, false);
     return new IncidentViewHolder(view);
   }

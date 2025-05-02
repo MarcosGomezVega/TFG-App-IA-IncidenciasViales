@@ -7,7 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.widget.Toast;
 
+import com.example.myapplication.Incident;
+
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBManager {
   private DBConexion dbConexion;
@@ -88,5 +92,20 @@ public class DBManager {
     long result = db.insert("incidencias", null, values);
     close();
     return result != -1;
+  }
+
+  public List<Incident> obtenerIncidencias() {
+    List<Incident> lista = new ArrayList<>();
+    open();
+    Cursor cursor = db.rawQuery("SELECT  tipo_incidencia FROM incidencias", null);
+    if (cursor.moveToFirst()) {
+      do {
+        String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipo_incidencia"));
+        lista.add(new Incident(tipo));
+      } while (cursor.moveToNext());
+    }
+    cursor.close();
+    close();
+    return lista;
   }
 }

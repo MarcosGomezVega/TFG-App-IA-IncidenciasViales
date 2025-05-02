@@ -40,6 +40,7 @@ public class DBConexion extends SQLiteOpenHelper {
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     db.execSQL("DROP TABLE IF EXISTS usuarios");
+    db.execSQL("DROP TABLE IF EXISTS incidencias");
     onCreate(db);
   }
 }

@@ -10,6 +10,10 @@ public class Incident {
     this.id = id;
   }
 
+  public Incident(String tipo){
+    this.tipo  = tipo;
+  }
+
   public String getTipo() { return tipo; }
   public int getId(){return id;}
 
