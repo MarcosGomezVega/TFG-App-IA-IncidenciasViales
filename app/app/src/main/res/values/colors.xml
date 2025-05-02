@@ -18,4 +18,6 @@
 
   <color name="surface">#FFFFFF</color>
   <color name="onSurface">#1C1B1F</color>
+
+  <color name="transparent">#00FFFFFF</color>
 </resources>

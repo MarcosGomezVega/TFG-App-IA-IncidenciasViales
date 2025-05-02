@@ -5,7 +5,7 @@
 
   <color name="colorPrimary">#BAA5F1</color>
   <color name="onPrimary">#000000</color>
-  <color name="primaryContainer">#241349</color>
+  <color name="primaryContainer">#1D1827</color>
   <color name="onPrimaryContainer">#EADDFF</color>
 
   <color name="colorSecondary">#4C4A4E</color>
@@ -18,4 +18,6 @@
 
   <color name="surface">#1C1B1F</color>
   <color name="onSurface">#E6E1E5</color>
+
+  <color name="transparent">#00FFFFFF</color>
 </resources>

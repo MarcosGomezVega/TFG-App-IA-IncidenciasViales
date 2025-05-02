@@ -17,11 +17,19 @@
   <string name="gaps_empty">Por favor completa todos los campos</string>
   <string name="accept_conditions">Debes aceptar los términos y condiciones de la app para registrarte</string>
   <string name="invalid_email">Correo inválido</string>
+  <string name="acounbt_create_well">Cuenta creada con éxito</string>
+  <string name="email_is_login">Error: El correo ya está registrado</string>
   <string name="acept">Aceptar</string>
   <string name="error">Error</string>
   <string name="email_passwd_dont_match">El correo o la contraseña son incorrectas</string>
-  <string name="take_photo">Toamr foto</string>
+  <string name="take_photo">Tomar foto</string>
   <string name="send_incident">Enviar incidencia</string>
   <string name="look_incident">Ver mis incidencias</string>
   <string name="name_app">IA Incidencias Viales</string>
+  <string name="type_incident">Tipo de Incidencia</string>
+  <string name="localization">Lacalización</string>
+  <string name="cant_open_camera">No se puede abrir la cámara</string>
+  <string name="camera_permision_fail">Permiso de cámara denegado</string>
+  <string name="error_creating_image">Error al crear archivo de imagen</string>
+  <string name="incident_send_well">Se ha enviado la incidencia CORRECTAMENTE</string>
 </resources>
