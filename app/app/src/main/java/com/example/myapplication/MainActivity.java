@@ -13,7 +13,6 @@ import android.provider.MediaStore;
 import android.text.Html;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +26,8 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
 import com.example.myapplication.database.DBManager;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
   private static final int REQUEST_IMAGE_CAPTURE = 1;
   private static final int REQUEST_CAMERA_PERMISSION = 100;
+  private static final int REQUEST_LOCATION_PERMISSION = 101;
   private Button btnTakePhoto;
   private Button btnSendIncident;
   private Button btnViewIncident;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
   private String currentPhotoPath;
   private Bitmap currentBitmap;
   private DBManager dbManager;
+  private FusedLocationProviderClient fusedLocationClient;
 
   /**
    * Called when the activity is first created.
@@ -75,6 +78,13 @@ public class MainActivity extends AppCompatActivity {
 
     dbManager = new DBManager(this);
 
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+      != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this,
+        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+        REQUEST_LOCATION_PERMISSION);
+    }
+
     btnTakePhoto.setOnClickListener(v -> {
       if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
         != PackageManager.PERMISSION_GRANTED) {
@@ -89,18 +99,23 @@ public class MainActivity extends AppCompatActivity {
       String localizacion = imageViewLocalizacion.getText().toString();
       String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
       int usuarioId = dbManager.obtenerIdUsuario("marcosgomezvegaportillo@gmail.com");
+      String status = "pendiente";
 
-      Toast.makeText(this, getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show();
+      boolean estadoInsertado = dbManager.insertarIncidencia(usuarioId, tipoIncidencia, localizacion,currentPhotoPath,fecha,status );
+      if (estadoInsertado) {
+        Toast.makeText(this, "Incidencia registrada correctamente", Toast.LENGTH_SHORT).show();
+      } else {
+        Toast.makeText(this, "Error al registrar el estado", Toast.LENGTH_SHORT).show();
+      }
 
-      dbManager.insertarIncidencia(usuarioId, tipoIncidencia, localizacion, currentBitmap, fecha);
       imageViewTipoIncidencia.setText("");
       imageViewLocalizacion.setText("");
       imageView.setImageResource(0);
       currentBitmap = null;
-
     });
 
-    btnViewIncident.setOnClickListener(v ->{
+
+    btnViewIncident.setOnClickListener(v -> {
       Intent intent = new Intent(MainActivity.this, IncidentActivity.class);
       startActivity(intent);
     });
@@ -148,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         openCamera();
       } else {
-        Toast.makeText(this, getString(R.string.camera_permision_fail), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
       }
     }
   }
@@ -164,17 +179,34 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-      Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
-      imageView.setImageBitmap(bitmap);
-      currentBitmap = bitmap;
-      //Valores por defecto
-      imageViewTipoIncidencia.setText("Asfalto roto");
-      imageViewLocalizacion.setText("Calle Falsa 123");
 
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+    Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+    imageView.setImageBitmap(bitmap);
+    currentBitmap = bitmap;
+
+    // Valor de prueba
+    imageViewTipoIncidencia.setText("Asfalto roto");
+
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+      fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+        if (location != null) {
+          double lat = location.getLatitude();
+          double lon = location.getLongitude();
+          String coords = "Lat: " + lat + ", Lon: " + lon;
+          imageViewLocalizacion.setText(coords);
+        } else {
+          imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
+        }
+      }).addOnFailureListener(e -> {
+        imageViewLocalizacion.setText(getString(R.string.error_having_location));
+      });
+    } else {
+      imageViewLocalizacion.setText(getString(R.string.permission_locattion_not_enable));
     }
   }
+
 
   /**
    * Creates a temporary image file in the app's private external storage.
