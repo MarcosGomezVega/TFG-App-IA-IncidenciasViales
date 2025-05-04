@@ -5,9 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.widget.Toast;
+import android.util.Log;
 
 import com.example.myapplication.Incident;
+import com.example.myapplication.IncidentStatus;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -17,15 +18,16 @@ public class DBManager {
   private DBConexion dbConexion;
   private SQLiteDatabase db;
   private Context context;
-
+  private Cursor cursor;
   public DBManager(Context context) {
     this.context = context;
     dbConexion = new DBConexion(context);
   }
-
   public void open() {
     db = dbConexion.getWritableDatabase();
+    Log.d("AdapterStatusssss", "Base de datos abierta: " + db.getPath());
   }
+
   public void close() {
     dbConexion.close();
   }
@@ -41,7 +43,28 @@ public class DBManager {
     close();
     return result != -1;
   }
+  public boolean insertarIncidencia(int usuarioId, String tipoIncidencia, String localizacion, String fotoRuta, String fecha, String status) {
+    open();
 
+
+
+    ContentValues values = new ContentValues();
+    values.put("usuario_id", usuarioId);
+    values.put("tipo_incidencia", tipoIncidencia);
+    values.put("localizacion", localizacion);
+    values.put("foto", fotoRuta);
+    values.put("fecha", fecha);
+    values.put("status", status);
+
+    long newId = db.insert("incidencias", null, values);
+    if (newId == -1) {
+      close();
+      return false;
+    }
+    close();
+    return true;
+
+  }
   public boolean validarUsuario(String email, String password) {
     open();
 
@@ -54,7 +77,6 @@ public class DBManager {
 
     return existe;
   }
-
   public boolean hayUsuariosRegistrados() {
     open();
     Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM usuarios WHERE email IS NOT NULL AND email != '' AND password IS NOT NULL AND password != ''", null);
@@ -62,7 +84,6 @@ public class DBManager {
     cursor.close();
     return hayDatos;
   }
-
   public int obtenerIdUsuario(String email) {
     open();
     Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ?", new String[]{email});
@@ -74,38 +95,54 @@ public class DBManager {
     close();
     return userId;
   }
-
-  public boolean insertarIncidencia(int usuarioId, String tipoIncidencia, String localizacion, Bitmap foto, String fecha) {
-    open();
-
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    foto.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-    byte[] fotoBytes = byteArrayOutputStream.toByteArray();
-
-    ContentValues values = new ContentValues();
-    values.put("usuario_id", usuarioId);
-    values.put("tipo_incidencia", tipoIncidencia);
-    values.put("localizacion", localizacion);
-    values.put("foto", fotoBytes);
-    values.put("fecha", fecha);
-
-    long result = db.insert("incidencias", null, values);
-    close();
-    return result != -1;
-  }
-
   public List<Incident> obtenerIncidencias() {
     List<Incident> lista = new ArrayList<>();
     open();
-    Cursor cursor = db.rawQuery("SELECT  tipo_incidencia FROM incidencias", null);
+    Cursor cursor = db.rawQuery("SELECT  id, tipo_incidencia FROM incidencias", null);
     if (cursor.moveToFirst()) {
       do {
         String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipo_incidencia"));
-        lista.add(new Incident(tipo));
+        int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+        lista.add(new Incident(tipo, id));
       } while (cursor.moveToNext());
     }
     cursor.close();
     close();
     return lista;
+
+
+  }
+  public IncidentStatus obtenerIncidencias(int id) {
+    open();
+    IncidentStatus result = null;
+
+    String query = "SELECT id,tipo_incidencia,localizacion,foto,fecha,status " +
+      "FROM incidencias " +
+      "WHERE id = ? ";
+    try {
+      Log.d("AdapterStatusssss", "ID: " + id);
+      cursor = db.rawQuery(query, new String[]{String.valueOf(id)});
+
+      Log.d("AdapterStatusssss", "Cursor count: " + cursor.getCount());
+      boolean tieneDatos = cursor.moveToFirst();
+      Log.d("AdapterStatusssss", "tieneDatos: " + tieneDatos);
+
+      if (tieneDatos) {
+        result = new IncidentStatus();
+        String[] columnNames = cursor.getColumnNames();
+        result.setId(cursor.getInt(0));
+        result.setIncident_type(cursor.getString(1));
+        result.setLocalitation(cursor.getString(2));
+        result.setPhoto(cursor.getString(3));
+        result.setDate(cursor.getString(4));
+        result.setStatus(cursor.getString(5));
+      }
+    }catch (Exception e) {
+      Log.e("AdapterStatusssss", "Error al acceder a los datos: " + e.getMessage(), e);
+    }
+    cursor.close();
+    close();
+    return result;
+
   }
 }

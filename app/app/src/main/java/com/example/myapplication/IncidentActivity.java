@@ -22,17 +22,11 @@ public class IncidentActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_incident);
-    Log.d("IncidentActivity", "onCreate started");
 
     recyclerViewIncidencia = findViewById(R.id.recyclerViewIncidencias);
     dbManager = new DBManager(this);
 
-    try {
-      incidents = new ArrayList<>(dbManager.obtenerIncidencias());
-      Log.d("IncidentActivity", "Incidencias cargadas");
-    } catch (Exception e) {
-      Log.e("IncidentActivity", "Error al cargar incidencias", e);
-    }
+    incidents = new ArrayList<>(dbManager.obtenerIncidencias());
 
     LinearLayoutManager layoutManager = new LinearLayoutManager(this);
     recyclerViewIncidencia.setLayoutManager(layoutManager);

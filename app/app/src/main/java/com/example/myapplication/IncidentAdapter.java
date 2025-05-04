@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,12 +31,22 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
   @Override
   public void onBindViewHolder(IncidentViewHolder holder, int position) {
+
     Incident incidencia = listaIncidencias.get(position);
 
+    holder.txtId.setText(String.valueOf(incidencia.getId()));
     holder.txtTipo.setText(incidencia.getTipo());
 
     holder.btnVer.setOnClickListener(v -> {
 
+        if (context == null) {
+          Log.e("AdapterStatusssss", "Contexto es null");
+        } else {
+          Log.d("AdapterStatusssss", "Contexto es válido: " + context.getClass().getSimpleName());
+        }
+        Intent intent = new Intent(context, CheckIncidentActivity.class);
+        intent.putExtra("ID_incident", incidencia.getId());
+        context.startActivity(intent);
       }
     );
   }
@@ -46,11 +57,13 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
   }
 
   public static class IncidentViewHolder extends RecyclerView.ViewHolder {
-    TextView txtTipo, txtFecha;
+    TextView txtTipo;
     Button btnVer;
+    TextView txtId;
 
     public IncidentViewHolder(View itemView) {
       super(itemView);
+      txtId = itemView.findViewById(R.id.txtId);
       txtTipo = itemView.findViewById(R.id.txtTipo);
       btnVer = itemView.findViewById(R.id.btnVer);
     }
