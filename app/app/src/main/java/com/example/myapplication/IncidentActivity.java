@@ -12,7 +12,7 @@ import com.example.myapplication.database.DBManager;
 
 import java.util.ArrayList;
 
-public class IncidentActivity extends AppCompatActivity {
+public class IncidentActivity extends ActionBar {
 
   private RecyclerView recyclerViewIncidencia;
   private ArrayList<Incident> incidents;
@@ -22,6 +22,9 @@ public class IncidentActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_incident);
+
+    setCustomActionBar(getString(R.string.title_activity_listIncident));
+
 
     recyclerViewIncidencia = findViewById(R.id.recyclerViewIncidencias);
     dbManager = new DBManager(this);

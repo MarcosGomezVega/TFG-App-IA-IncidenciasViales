@@ -16,7 +16,7 @@ import com.example.myapplication.database.DBManager;
 import java.io.File;
 import java.util.Arrays;
 
-public class CheckIncidentActivity extends AppCompatActivity {
+public class CheckIncidentActivity extends AppCompatActivity  {
 
   private TextView txtTypeIncident;
   private ImageView imgView;
@@ -34,7 +34,10 @@ public class CheckIncidentActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_ckeck_incident);
-    Log.d("AdapterStatusssss", "Activity Loaded");
+
+    if (getSupportActionBar() != null) {
+      getSupportActionBar().hide();
+    }
 
     txtTypeIncident = findViewById(R.id.txtTypeIncident);
     imgView = findViewById(R.id.imagePreview);
@@ -65,12 +68,15 @@ public class CheckIncidentActivity extends AppCompatActivity {
     switch (estado.toLowerCase()) {
       case "pendiente":
         txtStatus.setBackgroundColor(Color.parseColor("#FFCDD2"));
+        txtStatus.setTextColor(Color.BLACK);
         break;
       case "en proceso":
         txtStatus.setBackgroundColor(Color.parseColor("#FFF9C4"));
+        txtStatus.setTextColor(Color.BLACK);
         break;
       case "resuelta":
         txtStatus.setBackgroundColor(Color.parseColor("#C8E6C9"));
+        txtStatus.setTextColor(Color.BLACK);
         break;
       default:
         txtStatus.setBackgroundColor(Color.LTGRAY);

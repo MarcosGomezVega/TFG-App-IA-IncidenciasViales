@@ -19,7 +19,7 @@ import com.example.myapplication.database.DBManager;
  * @author Marcos Gomez Vega
  * @version 1.0
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends ActionBar {
 
   private DBManager dbManager;
   private  Button buttonLogin;
@@ -36,6 +36,9 @@ public class LoginActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
+
+    setCustomActionBar(getString(R.string.title_activity_login));
+
 
     dbManager = new DBManager(this);
 

@@ -42,7 +42,7 @@ import java.util.Locale;
  * @author Marcos Gomez Vega
  * @version 1.0
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends ActionBar {
 
   private static final int REQUEST_IMAGE_CAPTURE = 1;
   private static final int REQUEST_CAMERA_PERMISSION = 100;
@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    setCustomActionBar(getString(R.string.title_activity_main));
 
     btnTakePhoto = findViewById(R.id.btnTakePhoto);
     btnSendIncident = findViewById(R.id.btnSendIncident);
