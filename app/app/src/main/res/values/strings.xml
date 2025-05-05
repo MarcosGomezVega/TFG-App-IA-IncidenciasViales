@@ -40,5 +40,7 @@
   <string name="location_not_enabled">Ubicación no disponible</string>
   <string name="error_having_location">Error al obtener ubicación</string>
   <string name="permission_locattion_not_enable">Permiso de ubicación no otorgado</string>
+  <!-- TODO: Remove or change this placeholder text -->
+  <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

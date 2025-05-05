@@ -6,19 +6,6 @@
   android:layout_height="match_parent"
   tools:context=".CheckIncidentActivity">
 
-
-  <TextView
-    android:id="@+id/txtTypeIncident"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:text="@string/type_incident"
-    android:textSize="24sp"
-    android:textStyle="bold"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
-
   <ImageView
     android:id="@+id/imagePreview"
     android:layout_width="300dp"
@@ -30,7 +17,7 @@
     app:layout_constraintDimensionRatio="16:9"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/txtTypeIncident" />
+    app:layout_constraintTop_toTopOf="parent" />
 
   <TextView
     android:id="@+id/textLocation"

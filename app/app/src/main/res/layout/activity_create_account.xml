@@ -8,33 +8,21 @@
   tools:context=".CreateAccountActivity"
   >
 
-  <TextView
-    android:id="@+id/tituloRegistro"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="@string/create_account"
-    android:textSize="24sp"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintBottom_toTopOf="@id/editTextUsrNombre"
-    android:layout_marginBottom="32dp"
-    android:layout_gravity="center"/>
 
   <EditText
     android:id="@+id/editTextUsrNombre"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="32dp"
-    android:layout_marginTop="8dp"
+    android:layout_marginTop="16dp"
     android:layout_marginEnd="32dp"
+    android:backgroundTint="@color/black"
     android:hint="@string/user_name"
     android:inputType="textPersonName"
     android:padding="10dp"
-    android:backgroundTint="@color/black"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/tituloRegistro" />
+    app:layout_constraintTop_toTopOf="parent" />
 
   <EditText
     android:id="@+id/editTextEmail"
