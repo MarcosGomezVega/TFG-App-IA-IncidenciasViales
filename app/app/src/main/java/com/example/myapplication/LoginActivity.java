@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,14 +39,19 @@ public class LoginActivity extends ActionBar {
     setContentView(R.layout.activity_login);
 
     setCustomActionBar(getString(R.string.title_activity_login));
-
-
+    if (backButton != null) {
+      backButton.setVisibility(View.INVISIBLE);
+    }
+    if (menuButton != null) {
+      menuButton.setVisibility(View.INVISIBLE);
+    }
     dbManager = new DBManager(this);
 
     buttonLogin = findViewById(R.id.buttonLogin);
     buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
 
     buttonLogin.setOnClickListener(v -> push_LoginButton(v));
+
     buttonCreateAccount.setOnClickListener(v -> push_CreateAccountButton(v));
   }
 
@@ -58,6 +64,8 @@ public class LoginActivity extends ActionBar {
     super.onStart();
 
     if (dbManager.hayUsuariosRegistrados()) {
+      int usuarioId = dbManager.obtenerIdUltimoUsuario();
+      dbManager.actualizarFechaLogin(usuarioId);
       Intent intent = new Intent(LoginActivity.this, MainActivity.class);
       startActivity(intent);
       finish();
@@ -85,6 +93,8 @@ public class LoginActivity extends ActionBar {
       boolean validacionUser = dbManager.validarUsuario(email, password);
 
       if (validacionUser) {
+        int usuarioId = dbManager.obtenerIdUltimoUsuario();
+        dbManager.actualizarFechaLogin(usuarioId);
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

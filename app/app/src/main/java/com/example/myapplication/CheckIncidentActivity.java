@@ -16,9 +16,8 @@ import com.example.myapplication.database.DBManager;
 import java.io.File;
 import java.util.Arrays;
 
-public class CheckIncidentActivity extends AppCompatActivity  {
+public class CheckIncidentActivity extends ActionBar  {
 
-  private TextView txtTypeIncident;
   private ImageView imgView;
   private TextView txtLocalication;
   private TextView txtDate;
@@ -35,11 +34,6 @@ public class CheckIncidentActivity extends AppCompatActivity  {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_ckeck_incident);
 
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().hide();
-    }
-
-    txtTypeIncident = findViewById(R.id.txtTypeIncident);
     imgView = findViewById(R.id.imagePreview);
     txtLocalication = findViewById(R.id.textLocation);
     txtDate = findViewById(R.id.textDate);
@@ -50,7 +44,8 @@ public class CheckIncidentActivity extends AppCompatActivity  {
 
     incidentSatatus=dbManager.obtenerIncidencias(id_incident);
 
-    txtTypeIncident.setText(incidentSatatus.getIncident_type());
+    setCustomActionBar(incidentSatatus.getIncident_type());
+
 
     imageUrl = incidentSatatus.getPhoto();
     File imgFile = new File(imageUrl);
@@ -58,7 +53,6 @@ public class CheckIncidentActivity extends AppCompatActivity  {
       Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
       imgView.setImageBitmap(bitmap);
     }
-
     txtLocalication.setText(incidentSatatus.getLocalitation());
     txtDate.setText(incidentSatatus.getDate());
     String estado = incidentSatatus.getStatus();
@@ -66,15 +60,15 @@ public class CheckIncidentActivity extends AppCompatActivity  {
 
 
     switch (estado.toLowerCase()) {
-      case "pendiente":
+      case "Pendiente":
         txtStatus.setBackgroundColor(Color.parseColor("#FFCDD2"));
         txtStatus.setTextColor(Color.BLACK);
         break;
-      case "en proceso":
+      case "En proceso":
         txtStatus.setBackgroundColor(Color.parseColor("#FFF9C4"));
         txtStatus.setTextColor(Color.BLACK);
         break;
-      case "resuelta":
+      case "Resuelta":
         txtStatus.setBackgroundColor(Color.parseColor("#C8E6C9"));
         txtStatus.setTextColor(Color.BLACK);
         break;

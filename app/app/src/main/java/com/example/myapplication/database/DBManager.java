@@ -11,8 +11,11 @@ import com.example.myapplication.Incident;
 import com.example.myapplication.IncidentStatus;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DBManager {
   private DBConexion dbConexion;
@@ -32,12 +35,13 @@ public class DBManager {
     dbConexion.close();
   }
 
-  public boolean insertarUsuario(String nombre, String email, String password) {
+  public boolean insertarUsuario(String nombre, String email, String password, String date) {
     open();
     ContentValues values = new ContentValues();
     values.put("nombre", nombre);
     values.put("email", email);
     values.put("password", password);
+    values.put("lastLogin", date);
 
     long result = db.insert("usuarios", null, values);
     close();
@@ -45,8 +49,6 @@ public class DBManager {
   }
   public boolean insertarIncidencia(int usuarioId, String tipoIncidencia, String localizacion, String fotoRuta, String fecha, String status) {
     open();
-
-
 
     ContentValues values = new ContentValues();
     values.put("usuario_id", usuarioId);
@@ -78,15 +80,27 @@ public class DBManager {
     return existe;
   }
   public boolean hayUsuariosRegistrados() {
-    open();
-    Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM usuarios WHERE email IS NOT NULL AND email != '' AND password IS NOT NULL AND password != ''", null);
-    boolean hayDatos = cursor.getCount() > 0;
-    cursor.close();
+    open();  // Abre la base de datos
+    Cursor cursor = null;
+    boolean hayDatos = false;
+    try {
+      cursor = db.rawQuery("SELECT COUNT(*) FROM usuarios WHERE email IS NOT NULL AND email != '' AND password IS NOT NULL AND password != ''", null);
+      if (cursor != null && cursor.moveToFirst()) {
+        hayDatos = cursor.getInt(0) > 0;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
+      close();
+    }
     return hayDatos;
   }
-  public int obtenerIdUsuario(String email) {
+  public int obtenerIdUltimoUsuario() {
     open();
-    Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ?", new String[]{email});
+    Cursor cursor = db.rawQuery("SELECT id FROM usuarios ORDER BY datetime(lastLogin) DESC LIMIT 1", null);
     int userId = -1;
     if (cursor.moveToFirst()) {
       userId = cursor.getInt(0);
@@ -144,5 +158,16 @@ public class DBManager {
     close();
     return result;
 
+  }
+
+  public void actualizarFechaLogin(int usuarioId) {
+    open();
+    String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
+    ContentValues values = new ContentValues();
+    values.put("lastLogin", date);
+
+    db.update("usuarios", values, "id = ?", new String[]{String.valueOf(usuarioId)});
+    close();
   }
 }

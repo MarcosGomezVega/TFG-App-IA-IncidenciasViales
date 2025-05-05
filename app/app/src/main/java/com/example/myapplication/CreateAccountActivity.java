@@ -15,6 +15,10 @@ import android.view.View;
 
 import com.example.myapplication.database.DBManager;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Activity that handles user account creation.
  * It validates user input (username, email, password) and stores the data in the database if valid.
@@ -23,7 +27,7 @@ import com.example.myapplication.database.DBManager;
  * @author Marcos Gómez Vega
  * @version 1.0
  */
-public class CreateAccountActivity extends AppCompatActivity {
+public class CreateAccountActivity extends ActionBar {
 
   private DBManager dbManager;
   private Button button_CreateAcount;
@@ -40,6 +44,13 @@ public class CreateAccountActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_create_account);
 
+    setCustomActionBar(getString(R.string.title_activity_crateaAcount));
+    if (backButton != null) {
+      backButton.setVisibility(View.INVISIBLE);
+    }
+    if (menuButton != null) {
+      menuButton.setVisibility(View.INVISIBLE);
+    }
     dbManager = new DBManager(this);
 
     button_CreateAcount = findViewById(R.id.btnCreateAccount);
@@ -81,7 +92,8 @@ public class CreateAccountActivity extends AppCompatActivity {
       builder.show();
     }
     else {
-      boolean insertado = dbManager.insertarUsuario(user_name, email, password);
+      String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+      boolean insertado = dbManager.insertarUsuario(user_name, email, password,date);
 
       if (insertado) {
         Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#00C853'><b>"+getString(R.string.acounbt_create_well)+"</b></font>"), Toast.LENGTH_SHORT).show();

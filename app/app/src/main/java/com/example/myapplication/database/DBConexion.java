@@ -19,7 +19,8 @@ public class DBConexion extends SQLiteOpenHelper {
       "id INTEGER PRIMARY KEY AUTOINCREMENT," +
       "nombre TEXT NOT NULL," +
       "email TEXT NOT NULL UNIQUE," +
-      "password TEXT NOT NULL" +
+      "password TEXT NOT NULL," +
+      "lastLogin TEXT NOT NULL" +
       ");";
 
     String CREATE_TABLE_INCIDENT = "CREATE TABLE incidencias (" +

@@ -12,7 +12,9 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -69,14 +72,18 @@ public class MainActivity extends ActionBar {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    setCustomActionBar(getString(R.string.title_activity_main));
-
     btnTakePhoto = findViewById(R.id.btnTakePhoto);
     btnSendIncident = findViewById(R.id.btnSendIncident);
     btnViewIncident = findViewById(R.id.btnViewIncidences);
     imageView = findViewById(R.id.imagePreview);
     imageViewTipoIncidencia = findViewById(R.id.textDetectedType);
     imageViewLocalizacion = findViewById(R.id.textLocation);
+
+    setCustomActionBar(getString(R.string.title_activity_main));
+
+    if (backButton != null) {
+      backButton.setVisibility(View.INVISIBLE);
+    }
 
     dbManager = new DBManager(this);
 
@@ -100,8 +107,8 @@ public class MainActivity extends ActionBar {
       String tipoIncidencia = imageViewTipoIncidencia.getText().toString();
       String localizacion = imageViewLocalizacion.getText().toString();
       String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-      int usuarioId = dbManager.obtenerIdUsuario("marcosgomezvegaportillo@gmail.com");
-      String status = "pendiente";
+      int usuarioId = dbManager.obtenerIdUltimoUsuario();
+      String status = "Pendiente";
 
       boolean estadoInsertado = dbManager.insertarIncidencia(usuarioId, tipoIncidencia, localizacion,currentPhotoPath,fecha,status );
       if (estadoInsertado) {
