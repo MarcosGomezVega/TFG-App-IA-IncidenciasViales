@@ -78,4 +78,4 @@ node_modules/
 .dotnet/
 
 #datasets
-.ModeloIA/datasets/
+ModeloIA/datasets/
