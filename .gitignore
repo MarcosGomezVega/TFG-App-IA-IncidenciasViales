@@ -76,3 +76,6 @@ node_modules/
 # Ignore environment-specific configurations and .NET-related files
 .config/
 .dotnet/
+
+#datasets
+.ModeloIA/datasets/

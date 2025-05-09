@@ -30,11 +30,9 @@ public class DBManager {
     db = dbConexion.getWritableDatabase();
     Log.d("AdapterStatusssss", "Base de datos abierta: " + db.getPath());
   }
-
   public void close() {
     dbConexion.close();
   }
-
   public boolean insertarUsuario(String nombre, String email, String password, String date) {
     open();
     ContentValues values = new ContentValues();
@@ -80,7 +78,7 @@ public class DBManager {
     return existe;
   }
   public boolean hayUsuariosRegistrados() {
-    open();  // Abre la base de datos
+    open();
     Cursor cursor = null;
     boolean hayDatos = false;
     try {

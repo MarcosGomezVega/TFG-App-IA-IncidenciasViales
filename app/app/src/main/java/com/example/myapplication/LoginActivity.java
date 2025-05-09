@@ -20,7 +20,7 @@ import com.example.myapplication.database.DBManager;
  * @author Marcos Gomez Vega
  * @version 1.0
  */
-public class LoginActivity extends ActionBar {
+public class LoginActivity extends AppCompatActivity{
 
   private DBManager dbManager;
   private  Button buttonLogin;
@@ -38,13 +38,6 @@ public class LoginActivity extends ActionBar {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
-    setCustomActionBar(getString(R.string.title_activity_login));
-    if (backButton != null) {
-      backButton.setVisibility(View.INVISIBLE);
-    }
-    if (menuButton != null) {
-      menuButton.setVisibility(View.INVISIBLE);
-    }
     dbManager = new DBManager(this);
 
     buttonLogin = findViewById(R.id.buttonLogin);

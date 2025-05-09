@@ -27,7 +27,7 @@ import java.util.Locale;
  * @author Marcos Gómez Vega
  * @version 1.0
  */
-public class CreateAccountActivity extends ActionBar {
+public class CreateAccountActivity extends AppCompatActivity  {
 
   private DBManager dbManager;
   private Button button_CreateAcount;
@@ -44,13 +44,6 @@ public class CreateAccountActivity extends ActionBar {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_create_account);
 
-    setCustomActionBar(getString(R.string.title_activity_crateaAcount));
-    if (backButton != null) {
-      backButton.setVisibility(View.INVISIBLE);
-    }
-    if (menuButton != null) {
-      menuButton.setVisibility(View.INVISIBLE);
-    }
     dbManager = new DBManager(this);
 
     button_CreateAcount = findViewById(R.id.btnCreateAccount);
