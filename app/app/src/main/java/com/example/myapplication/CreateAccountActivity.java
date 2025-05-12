@@ -27,7 +27,7 @@ import java.util.Locale;
  * @author Marcos Gómez Vega
  * @version 1.0
  */
-public class CreateAccountActivity extends AppCompatActivity  {
+public class CreateAccountActivity extends AppCompatActivity {
 
   private DBManager dbManager;
   private Button button_CreateAcount;
@@ -73,29 +73,25 @@ public class CreateAccountActivity extends AppCompatActivity  {
 
     if (TextUtils.isEmpty(user_name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
       Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#FF0000'><b> " + getString(R.string.gaps_empty) + " </b></font>"), Toast.LENGTH_SHORT).show();
-    }
-    else if (!password.equals(confirmPassword)) {
+    } else if (!password.equals(confirmPassword)) {
       Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.passwd_dont_match) + "</b></font>"), Toast.LENGTH_SHORT).show();
-    }
-    else if (!checkBox.isChecked()) {
+    } else if (!checkBox.isChecked()) {
       AlertDialog.Builder builder = new AlertDialog.Builder(CreateAccountActivity.this);
       builder.setTitle(Html.fromHtml("<font color='#FF0000'>" + getString(R.string.error) + "</font>"));
       builder.setMessage(getString(R.string.accept_conditions));
       builder.setPositiveButton(Html.fromHtml("<font color='#6750A4'>" + getString(R.string.acept) + "</font>"), null);
       builder.show();
-    }
-    else {
+    } else {
       String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-      boolean insertado = dbManager.insertarUsuario(user_name, email, password,date);
+      boolean insertado = dbManager.insertarUsuario(user_name, email, password, date);
 
       if (insertado) {
-        Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#00C853'><b>"+getString(R.string.acounbt_create_well)+"</b></font>"), Toast.LENGTH_SHORT).show();
+        Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#00C853'><b>" + getString(R.string.acounbt_create_well) + "</b></font>"), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(CreateAccountActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
-      }
-      else {
-        Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#FF0000'><b>Error: "+getString(R.string.email_is_login)+"</b></font>"), Toast.LENGTH_SHORT).show();
+      } else {
+        Toast.makeText(CreateAccountActivity.this, Html.fromHtml("<font color='#FF0000'><b>Error: " + getString(R.string.email_is_login) + "</b></font>"), Toast.LENGTH_SHORT).show();
       }
     }
   }

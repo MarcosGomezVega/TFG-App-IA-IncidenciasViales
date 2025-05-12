@@ -1,5 +1,8 @@
 package com.example.myapplication.ui.Incidents;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,28 +25,36 @@ import java.util.ArrayList;
 public class IncidentsFragment extends Fragment {
 
 
-    private RecyclerView recyclerViewIncidencia;
-    private ArrayList<Incident> incidents;
-    private DBManager dbManager;
+  private RecyclerView recyclerViewIncidencia;
+  private ArrayList<Incident> incidents;
+  private DBManager dbManager;
+  private int user_id;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+  public View onCreateView(@NonNull LayoutInflater inflater,
+                           ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_incidents, container, false);
+    View root = inflater.inflate(R.layout.fragment_incidents, container, false);
 
-        recyclerViewIncidencia = root.findViewById(R.id.recyclerViewIncidencias);
-        dbManager = new DBManager(getContext());
+    recyclerViewIncidencia = root.findViewById(R.id.recyclerViewIncidencias);
+    dbManager = new DBManager(getContext());
 
-        incidents = new ArrayList<>(dbManager.obtenerIncidencias());
+    user_id = getUserId();
+    incidents = new ArrayList<>(dbManager.obtenerListaIncidencias(user_id));
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerViewIncidencia.setLayoutManager(layoutManager);
+    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+    recyclerViewIncidencia.setLayoutManager(layoutManager);
 
-        NavController navController = NavHostFragment.findNavController(this);
+    NavController navController = NavHostFragment.findNavController(this);
 
-        IncidentAdapter incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
-        recyclerViewIncidencia.setAdapter(incidentAdapter);
+    IncidentAdapter incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
+    recyclerViewIncidencia.setAdapter(incidentAdapter);
 
-        return root;
-    }
+    return root;
+  }
+
+  private int getUserId() {
+    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_session", MODE_PRIVATE);
+    return sharedPreferences.getInt("user_id", -1);
+  }
+
 }

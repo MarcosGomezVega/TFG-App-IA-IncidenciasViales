@@ -3,6 +3,7 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -56,14 +57,30 @@ public class LoginActivity extends AppCompatActivity{
   protected void onStart() {
     super.onStart();
 
-    if (dbManager.hayUsuariosRegistrados()) {
-      int usuarioId = dbManager.obtenerIdUltimoUsuario();
-      dbManager.actualizarFechaLogin(usuarioId);
+
+    SharedPreferences sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE);
+    boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
+    int userId = sharedPreferences.getInt("user_id", -1);
+
+    if (isLoggedIn && dbManager.userExistsInDatabase(userId)) {
       Intent intent = new Intent(LoginActivity.this, MainActivity.class);
       startActivity(intent);
       finish();
+    } else {
+      SharedPreferences.Editor editor = sharedPreferences.edit();
+      editor.clear();
+      editor.apply();
     }
   }
+
+  private void loginUser(int usuarioId) {
+    SharedPreferences sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE);
+    SharedPreferences.Editor editor = sharedPreferences.edit();
+    editor.putBoolean("is_logged_in", true);
+    editor.putInt("user_id", usuarioId);
+    editor.apply();
+  }
+
 
   /**
    * Handles the login button click.
@@ -86,8 +103,10 @@ public class LoginActivity extends AppCompatActivity{
       boolean validacionUser = dbManager.validarUsuario(email, password);
 
       if (validacionUser) {
-        int usuarioId = dbManager.obtenerIdUltimoUsuario();
+        int usuarioId = dbManager.obtnerIdPorCorreo(email);
         dbManager.actualizarFechaLogin(usuarioId);
+
+        loginUser(usuarioId);
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

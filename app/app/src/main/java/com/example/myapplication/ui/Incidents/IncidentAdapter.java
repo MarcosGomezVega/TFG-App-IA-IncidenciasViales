@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.Incidents;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,12 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.IncidentViewHolder> {
   private Context context;
   private List<Incident> listaIncidencias;
-
   private NavController navController;
 
 
@@ -41,17 +42,27 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
     Incident incidencia = listaIncidencias.get(position);
 
-    holder.txtId.setText(String.valueOf(incidencia.getId()));
-    holder.txtTipo.setText(incidencia.getTipo());
-    holder.btnVer.setOnClickListener(v -> {
-      if (navController != null) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("ID_incident", incidencia.getId());
-        navController.navigate(R.id.nav_slideshow,bundle);
-      } else {
-        Log.e("IncidentAdapter", "NavController es null");
-      }
-    });
+    holder.txtTypeIncident.setText(String.valueOf(incidencia.getTipo()));
+    String estado = incidencia.getStatus().toLowerCase();
+    Log.d("DATABASE", "Estado :" + estado);
+
+    switch (estado) {
+      case "pendiente":
+        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setTextColor(Color.parseColor("#FFCDD2"));
+        break;
+      case "en proceso":
+        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setTextColor(Color.parseColor("#FFF9C4"));
+        break;
+      case "resuelta":
+        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setTextColor(Color.parseColor("#C8E6C9"));
+        break;
+      default:
+        holder.txtStatus.setText(incidencia.getStatus());
+        break;
+    }
   }
 
   @Override
@@ -60,15 +71,15 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
   }
 
   public static class IncidentViewHolder extends RecyclerView.ViewHolder {
-    TextView txtTipo;
-    Button btnVer;
-    TextView txtId;
+    TextView txtTypeIncident;
+    TextView txtStatus;
+    Button  btnView;
 
     public IncidentViewHolder(View itemView) {
       super(itemView);
-      txtId = itemView.findViewById(R.id.txtId);
-      txtTipo = itemView.findViewById(R.id.txtTipo);
-      btnVer = itemView.findViewById(R.id.btnVer);
+      txtTypeIncident = itemView.findViewById(R.id.txtTypeIncident);
+      txtStatus = itemView.findViewById(R.id.txtStatus);
+      btnView = itemView.findViewById(R.id.btnView);
     }
   }
 }
