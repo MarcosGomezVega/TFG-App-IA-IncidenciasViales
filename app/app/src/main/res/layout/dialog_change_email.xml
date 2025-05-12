@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:padding="16dp"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="@color/primaryContainer">
+
+  <EditText
+    android:id="@+id/edtCurrentEmail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/current_email"
+    android:inputType="textEmailAddress"
+    android:textColor="@color/black"/>
+
+  <EditText
+    android:id="@+id/edtUsername"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/username"
+    android:inputType="text"
+    android:textColor="@color/black"/>
+
+  <EditText
+    android:id="@+id/edtNewEmail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/new_email"
+    android:inputType="textEmailAddress"
+    android:textColor="@color/black"/>
+
+  <EditText
+    android:id="@+id/edtConfirmNewEmail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/confirm_new_email"
+    android:inputType="textEmailAddress"
+    android:textColor="@color/black"/>
+
+  <EditText
+    android:id="@+id/edtPassword"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/passwd"
+    android:inputType="textPassword"
+    android:textColor="@color/black"/>
+</LinearLayout>

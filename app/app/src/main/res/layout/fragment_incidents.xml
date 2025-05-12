@@ -20,36 +20,36 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/txtId"
+            android:id="@+id/txtTypeIncident"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
+            android:layout_weight="2"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Id"
+            android:text="@string/type_incident"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/txtTipo"
+            android:id="@+id/txtstatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:ellipsize="end"
             android:maxLines="1"
             android:paddingEnd="8dp"
-            android:text="Tipo de incidencia"
+            android:text="@string/status_incident_list"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/txtVer"
+            android:id="@+id/txtView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="0.8"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Info"
+            android:text="@string/info"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp" />
     </LinearLayout>

@@ -12,14 +12,14 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_Incidents"
         android:name="com.example.myapplication.ui.Incidents.IncidentsFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_incidents" />
+  <fragment
+    android:id="@+id/nav_config"
+    android:name="com.example.myapplication.ui.Config.ConfigFragment"
+    android:label="@string/menu_config"
+    tools:layout="@layout/fragment_config" />
 
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.example.myapplication.ui.CheckIncidentFragment.CheckIncidentFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_checkincidents" />
 </navigation>
