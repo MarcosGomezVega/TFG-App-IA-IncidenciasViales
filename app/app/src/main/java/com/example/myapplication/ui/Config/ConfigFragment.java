@@ -1,15 +1,27 @@
 package com.example.myapplication.ui.Config;
 
+
+
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,29 +30,45 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.myapplication.LoginActivity;
-import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
-import com.example.myapplication.Usuario;
-import com.example.myapplication.database.DBManager;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 public class ConfigFragment extends Fragment {
 
+  private static final int REQUEST_IMAGE_CAPTURE = 1;
+  private static final int REQUEST_PICK_IMAGE = 100;
   private Switch switchDarkMode;
   private Switch switchNotification;
   private Spinner spinnerLenguage;
-
   private Button btnChangeEmail;
   private Button btnChangePasword;
   private Button btnChangeAvatar;
   private Button btnDeleteAcount;
   private Button btnLogOut;
+  private Uri photoUri;
+  private ImageView imgviewAvatar;
+  private Bitmap currentBitmap;
+  private Uri selectedImageUri = null;
+  private String currentPhotoPath = null;
+
+
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -81,7 +109,7 @@ public class ConfigFragment extends Fragment {
 
     btnChangeEmail.setOnClickListener(v -> showChangeEmailDialog());
     btnChangePasword.setOnClickListener(v -> showChangePasswordDialog());
-
+    btnChangeAvatar.setOnClickListener(v -> showChangeAvatar());
     btnDeleteAcount.setOnClickListener(v -> showDeleteAccountDialog());
     btnLogOut.setOnClickListener(v -> logout());
     return root;
@@ -138,60 +166,64 @@ public class ConfigFragment extends Fragment {
     builder.setView(view);
 
     EditText edtCurrentEmail = view.findViewById(R.id.edtCurrentEmail);
-    EditText edtUsername = view.findViewById(R.id.edtUsername);
     EditText edtNewEmail = view.findViewById(R.id.edtNewEmail);
     EditText edtConfirmNewEmail = view.findViewById(R.id.edtConfirmNewEmail);
     EditText edtPassword = view.findViewById(R.id.edtPassword);
 
     builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {
-      String currentEmail = edtCurrentEmail.getText().toString().trim();
-      String username = edtUsername.getText().toString().trim();
-      String newEmail = edtNewEmail.getText().toString().trim();
-      String confirmNewEmail = edtConfirmNewEmail.getText().toString().trim();
-      String password = edtPassword.getText().toString().trim();
-
-      if (currentEmail.isEmpty() || username.isEmpty() || newEmail.isEmpty() || confirmNewEmail.isEmpty() || password.isEmpty()) {
-        Toast.makeText(getContext(), getString(R.string.toast_all_fields_required), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      if (!newEmail.equals(confirmNewEmail)) {
-        Toast.makeText(getContext(), getString(R.string.toast_emails_not_match), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      DBManager dbManager = new DBManager(requireContext());
-      Usuario usuario = dbManager.obtenerUsuarioPorCorreo(currentEmail);
-
-      if (usuario == null) {
-        Toast.makeText(getContext(), getString(R.string.toast_current_email_not_found), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE);
-      int sessionUserId = sharedPreferences.getInt("user_id", -1);
-
-      if (usuario.getId() != sessionUserId) {
-        Toast.makeText(getContext(), getString(R.string.toast_email_not_user), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      if (!usuario.getNombre().equals(username) || !usuario.getPassword().equals(password)) {
-        Toast.makeText(getContext(), getString(R.string.toast_username_or_password_wrong), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      boolean actualizado = dbManager.actualizarCorreo(currentEmail, newEmail);
-      if (actualizado) {
-        Toast.makeText(getContext(), getString(R.string.toast_email_updated_success), Toast.LENGTH_SHORT).show();
-      } else {
-        Toast.makeText(getContext(), getString(R.string.toast_email_update_failed), Toast.LENGTH_SHORT).show();
-      }
-
+      pushBtnChangeEmail(edtCurrentEmail, edtNewEmail, edtConfirmNewEmail, edtPassword);
     });
     builder.setNegativeButton(getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
     builder.create().show();
   }
+  private void pushBtnChangeEmail(EditText edtCurrentEmail, EditText edtNewEmail, EditText edtConfirmNewEmail, EditText edtPassword) {
+    String currentEmail = edtCurrentEmail.getText().toString().trim();
+    String newEmail = edtNewEmail.getText().toString().trim();
+    String confirmNewEmail = edtConfirmNewEmail.getText().toString().trim();
+    String password = edtPassword.getText().toString().trim();
+
+    if (currentEmail.isEmpty() || newEmail.isEmpty() || confirmNewEmail.isEmpty() || password.isEmpty()) {
+      Toast.makeText(getContext(), getString(R.string.toast_all_fields_required), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if (!newEmail.equals(confirmNewEmail)) {
+      Toast.makeText(getContext(), getString(R.string.toast_emails_not_match), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    if (user == null || user.getEmail() == null) {
+      Toast.makeText(getContext(), "Usuario no autenticado", Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if (!user.getEmail().equals(currentEmail)) {
+      Toast.makeText(getContext(), getString(R.string.toast_current_email_not_match), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    AuthCredential credential = EmailAuthProvider.getCredential(currentEmail, password);
+
+    user.reauthenticate(credential).addOnCompleteListener(task -> {
+      if (task.isSuccessful()) {
+        user.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(updateTask -> {
+          if (updateTask.isSuccessful()) {
+            Toast.makeText(getContext(), "Verifica el nuevo correo para completar el cambio, Se te habrá enviado un correo al nuevo correo electronico", Toast.LENGTH_LONG).show();
+          } else {
+            Log.d("FIREBASE", "Email update failed: " + updateTask.getException());
+            Toast.makeText(getContext(), "Error al enviar verificación", Toast.LENGTH_SHORT).show();
+          }
+        });
+      } else {
+        Log.d("FIREBASE", "Reauthentication failed: " + task.getException());
+        Toast.makeText(getContext(), "Reautenticación fallida", Toast.LENGTH_SHORT).show();
+      }
+    });
+
+  }
+
 
   private void showChangePasswordDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog);
@@ -206,89 +238,192 @@ public class ConfigFragment extends Fragment {
     EditText edtConfirmNewPassword = view.findViewById(R.id.edtConfirmNewPassword);
 
     builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {
-      String email = edtEmail.getText().toString().trim();
-      String currentPassword = edtCurrentPassword.getText().toString().trim();
-      String newPassword = edtNewPassword.getText().toString().trim();
-      String confirmNewPassword = edtConfirmNewPassword.getText().toString().trim();
-
-      if (email.isEmpty() || currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
-        Toast.makeText(getContext(), getString(R.string.toast_all_fields_required), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      if (!newPassword.equals(confirmNewPassword)) {
-        Toast.makeText(getContext(), getString(R.string.toast_passwords_not_match), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      DBManager dbManager = new DBManager(requireContext());
-      Usuario usuario = dbManager.obtenerUsuarioPorCorreo(email);
-
-      if (usuario == null) {
-        Toast.makeText(getContext(), getString(R.string.toast_user_not_found), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE);
-      int sessionUserId = sharedPreferences.getInt("user_id", -1);
-
-      if (usuario.getId() != sessionUserId) {
-        Toast.makeText(getContext(), getString(R.string.toast_email_not_user), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      if (!usuario.getPassword().equals(currentPassword)) {
-        Toast.makeText(getContext(), getString(R.string.toast_wrong_current_password), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      boolean actualizado = dbManager.actualizarPassword(email, newPassword);
-      if (actualizado) {
-        Toast.makeText(getContext(), getString(R.string.toast_password_updated_success), Toast.LENGTH_SHORT).show();
-      } else {
-        Toast.makeText(getContext(), getString(R.string.toast_password_update_failed), Toast.LENGTH_SHORT).show();
-      }
-
+      pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword);
     });
-    builder.setNegativeButton(getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
-    builder.create().show();
+
+    builder.setNegativeButton(getString(R.string.button_cancel), null);
+
+    AlertDialog dialog = builder.create();
+    dialog.setCancelable(false);
+    dialog.show();
   }
+  private void pushBtnChangePassword(EditText edtEmail, EditText edtCurrentPassword, EditText edtNewPassword, EditText edtConfirmNewPassword) {
+    String email = edtEmail.getText().toString().trim();
+    String currentPassword = edtCurrentPassword.getText().toString().trim();
+    String newPassword = edtNewPassword.getText().toString().trim();
+    String confirmNewPassword = edtConfirmNewPassword.getText().toString().trim();
+
+    if (email.isEmpty() || currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
+      Toast.makeText(getContext(), getString(R.string.toast_all_fields_required), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if (!newPassword.equals(confirmNewPassword)) {
+      Toast.makeText(getContext(), getString(R.string.toast_passwords_not_match), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    if (user != null) {
+      AuthCredential credential = EmailAuthProvider.getCredential(email, currentPassword);
+      user.reauthenticate(credential).addOnCompleteListener(task -> {
+        if (task.isSuccessful()) {
+
+          user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+            if (updateTask.isSuccessful()) {
+              Toast.makeText(getContext(), getString(R.string.toast_password_updated_success), Toast.LENGTH_SHORT).show();
+            } else {
+              Toast.makeText(getContext(), getString(R.string.toast_password_update_failed), Toast.LENGTH_SHORT).show();
+            }
+          });
+        } else {
+          Toast.makeText(getContext(), getString(R.string.toast_error_reauthenticating), Toast.LENGTH_SHORT).show();
+        }
+      });
+    }
+  }
+
 
   private void showDeleteAccountDialog() {
     new AlertDialog.Builder(requireContext())
       .setTitle(getString(R.string.dialog_delete_account_title))
       .setMessage(getString(R.string.dialog_delete_account_message))
       .setPositiveButton(getString(R.string.dialog_delete_account_yes), (dialog, which) -> {
-        DBManager dbManager = new DBManager(requireContext());
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE);
-        int sessionUserId = sharedPreferences.getInt("user_id", -1);
-
-        if (dbManager.deleteUser(sessionUserId)) {
-          Toast.makeText(getContext(), getString(R.string.toast_account_deleted), Toast.LENGTH_SHORT).show();
-          sharedPreferences.edit().clear().apply();
-          Intent intent = new Intent(requireContext(), LoginActivity.class);
-          startActivity(intent);
-          requireActivity().finish();
-        } else {
-          Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show();
-        }
+        pushBtnDeleteAccount();
       })
       .setNegativeButton(getString(R.string.dialog_delete_account_no), null)
       .show();
   }
 
-  private void logout() {
-    SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE);
-    SharedPreferences.Editor editor = sharedPreferences.edit();
-    editor.putBoolean("is_logged_in", false);
-    editor.remove("user_id");
-    editor.apply();
+  private void pushBtnDeleteAccount() {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    Intent intent = new Intent(requireContext(), LoginActivity.class);
+    if (user != null) {
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+      db.collection("users").document(user.getUid())
+        .delete()
+        .addOnSuccessListener(aVoid -> {
+          user.delete()
+            .addOnCompleteListener(task -> {
+              if (task.isSuccessful()) {
+                Toast.makeText(getContext(), getString(R.string.toast_account_deleted), Toast.LENGTH_SHORT).show();
+                SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE);
+                sharedPreferences.edit().clear().apply();
+                Intent intent = new Intent(requireContext(), LoginActivity.class);
+                startActivity(intent);
+                requireActivity().finish();
+              } else {
+                Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show();
+              }
+            });
+        })
+        .addOnFailureListener(e -> {
+          Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show();
+        });
+    }
+  }
+
+  private void showChangeAvatar() {
+    AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog);
+    builder.setTitle("Cambiar Avatar");
+
+    View view = getLayoutInflater().inflate(R.layout.dialog_change_avatar, null);
+    builder.setView(view);
+
+    imgviewAvatar = view.findViewById(R.id.imageviewAvatar);
+    ImageButton btnGalery = view.findViewById(R.id.btnGallery);
+    ImageButton btnCamera = view.findViewById(R.id.btnCamera);
+
+    btnGalery.setOnClickListener(v -> pickImageFromGallery());
+    btnCamera.setOnClickListener(v -> openCamera());
+
+
+    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {btnChangeAvatar(); });
+    builder.setNegativeButton(getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
+    builder.create().show();
+  }
+
+  private void btnChangeAvatar(){
+
+  }
+  private void pickImageFromGallery() {
+    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+    intent.setType("image/*");
+    pickImageLauncher.launch(intent);
+  }
+  private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    galery(result);
+  });
+  private void galery(ActivityResult result) {
+    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+      Uri imageUri = result.getData().getData();
+      if (imageUri != null) {
+        imgviewAvatar.setImageURI(imageUri);
+        selectedImageUri = imageUri;
+      }
+    }
+  }
+  private final ActivityResultLauncher<Intent> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    photo(result);
+  });
+  private void photo(ActivityResult result) {
+    if (result.getResultCode() == Activity.RESULT_OK) {
+      Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+      if (bitmap != null) {
+        imgviewAvatar.setImageBitmap(bitmap);
+        selectedImageUri = photoUri;
+      } else {
+        Toast.makeText(getContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show();
+      }
+    }
+  }
+  private void openCamera() {
+    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
+      File photoFile;
+      try {
+        photoFile = createImageFile();
+      } catch (IOException ex) {
+        Toast.makeText(getContext(), "Error al crear archivo de imagen", Toast.LENGTH_SHORT).show();
+        return;
+      }
+      if (photoFile != null) {
+        photoUri = FileProvider.getUriForFile(
+          getContext(),
+          "com.example.myapplication.fileprovider",
+          photoFile
+        );
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        takePhotoLauncher.launch(intent); // <--- nuevo launcher
+      }
+    }
+  }
+  private File createImageFile() throws IOException {
+    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+    String imageFileName = "JPEG_" + timeStamp + "_";
+
+    File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    if (storageDir != null && !storageDir.exists()) {
+      storageDir.mkdirs();
+    }
+    File image = File.createTempFile(
+      imageFileName,
+      ".jpg",
+      storageDir
+    );
+
+    currentPhotoPath = image.getAbsolutePath();
+    Log.d("RutaImagen", "Ruta de la imagen: " + currentPhotoPath);
+    return image;
+  }
+  private void logout() {
+    FirebaseAuth.getInstance().signOut();
+
+    Intent intent = new Intent(getContext(), LoginActivity.class);
     startActivity(intent);
     requireActivity().finish();
   }
-
 
 }
 

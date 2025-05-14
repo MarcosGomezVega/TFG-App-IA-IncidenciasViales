@@ -1,8 +1,5 @@
 package com.example.myapplication.ui.CheckIncidentFragment;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 
@@ -19,82 +17,92 @@ import android.graphics.Color;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.myapplication.Incident;
 import com.example.myapplication.R;
-import com.example.myapplication.database.DBManager;
-import com.example.myapplication.IncidentStatus;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.File;
 
 public class CheckIncidentFragment extends Fragment {
 
-
+  private TextView txtType_incident;
   private ImageView imgView;
   private TextView txtLocalitation;
   private TextView txtDate;
   private TextView txtStatus;
-  private DBManager dbManager;
-  private IncidentStatus incidentSatatus;
   private String imageUrl;
-  private int id_incident;
+  private String id_incident;
+  private FirebaseFirestore db;
 
-
+  @Override
   public View onCreateView(@NonNull LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
 
     View root = inflater.inflate(R.layout.fragment_checkincidents, container, false);
 
+    txtType_incident = root.findViewById(R.id.txt_TypeIncident);
     imgView = root.findViewById(R.id.imagePreview);
     txtLocalitation = root.findViewById(R.id.textLocation);
     txtDate = root.findViewById(R.id.textDate);
     txtStatus = root.findViewById(R.id.textStatus);
 
-    dbManager = new DBManager(getContext());
-
     Bundle args = getArguments();
     if (args != null) {
-      id_incident = args.getInt("ID_incident", -1);
-    } else {
-      Log.e("CheckIncidentFragment", "No se recibió ningún argumento");
+      id_incident = args.getString("incident_id");
     }
 
-    incidentSatatus = dbManager.obtenerIncidencias(id_incident);
+    db = FirebaseFirestore.getInstance();
+    db.collection("incidencias").document(id_incident).get()
+      .addOnSuccessListener(documentSnapshot -> {
+        if (documentSnapshot.exists()) {
+          Incident incident = documentSnapshot.toObject(Incident.class);
 
-    getActivity().setTitle(incidentSatatus.getIncident_type());
+          if (incident != null) {
 
-    imageUrl = incidentSatatus.getPhoto();
-    File imgFile = new File(imageUrl);
-    if (imgFile.exists()) {
-      Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-      imgView.setImageBitmap(bitmap);
-    }
-    txtLocalitation.setText(incidentSatatus.getLocalitation());
-    txtDate.setText(incidentSatatus.getDate());
+            txtType_incident.setText(incident.getTipoIncidencia());
+            Log.d("FIREBASE", "Tipo de Incidencia: " + incident.getTipoIncidencia() );
+            imageUrl = incident.getFoto();
 
-    String estado = incidentSatatus.getStatus();
+            File imgFile = new File(imageUrl);
+            if (imgFile.exists()) {
+              Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+              imgView.setImageBitmap(bitmap);
+            }
 
-    switch (estado.toLowerCase()) {
-      case "pendiente":
-        txtStatus.setText(getString(R.string.waiting));
-        txtStatus.setBackgroundColor(Color.parseColor("#FFCDD2"));
-        txtStatus.setTextColor(Color.BLACK);
-        break;
-      case "en proceso":
-        txtStatus.setText(getString(R.string.in_proces));
-        txtStatus.setBackgroundColor(Color.parseColor("#FFF9C4"));
-        txtStatus.setTextColor(Color.BLACK);
-        break;
-      case "resuelta":
-        txtStatus.setText(getString(R.string.result));
-        txtStatus.setBackgroundColor(Color.parseColor("#C8E6C9"));
-        txtStatus.setTextColor(Color.BLACK);
-        break;
-      default:
-        txtStatus.setBackgroundColor(Color.LTGRAY);
-        break;
-    }
+
+            txtLocalitation.setText(incident.getLocalizacion());
+            txtDate.setText(incident.getFecha());
+
+            String estado = incident.getStatus();
+            switch (estado.toLowerCase()) {
+              case "pendiente":
+                txtStatus.setText(getString(R.string.waiting));
+                txtStatus.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.red));
+                txtStatus.setTextColor(Color.BLACK);
+                break;
+              case "en proceso":
+                txtStatus.setText(getString(R.string.in_proces));
+                txtStatus.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.yellow));
+                txtStatus.setTextColor(Color.BLACK);
+                break;
+              case "resuelta":
+                txtStatus.setText(getString(R.string.result));
+                txtStatus.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.green));
+                txtStatus.setTextColor(Color.BLACK);
+                break;
+              default:
+                txtStatus.setText(estado);
+                txtStatus.setBackgroundColor(Color.LTGRAY);
+                txtStatus.setTextColor(Color.BLACK);
+                break;
+            }
+          }
+        } else {
+          Log.e("FIREBASE", "El documento no existe");
+        }
+      })
+      .addOnFailureListener(e -> Log.e("FIREBASE", "Error al obtener el documento", e));
 
     return root;
   }
-
-
 }

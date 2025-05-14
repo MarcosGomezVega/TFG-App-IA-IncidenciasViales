@@ -22,16 +22,22 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+
 import com.example.myapplication.R;
-import com.example.myapplication.database.DBManager;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import android.content.Intent;
 import android.provider.MediaStore;
@@ -59,7 +65,6 @@ public class HomeFragment extends Fragment {
   private TextView imageViewLocalizacion;
   private String currentPhotoPath;
   private Bitmap currentBitmap;
-  private DBManager dbManager;
   private FusedLocationProviderClient fusedLocationClient;
 
   public View onCreateView(@NonNull LayoutInflater inflater,
@@ -74,7 +79,6 @@ public class HomeFragment extends Fragment {
     imageViewTipoIncidencia = root.findViewById(R.id.textDetectedType);
     imageViewLocalizacion = root.findViewById(R.id.textLocation);
 
-    dbManager = new DBManager(getContext());
 
     if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
       != PackageManager.PERMISSION_GRANTED) {
@@ -84,48 +88,51 @@ public class HomeFragment extends Fragment {
     }
 
     btnTakePhoto.setOnClickListener(v -> {
-      if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA)
-        != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-      } else {
-        openCamera();
-      }
+      pushBtnTakePhoto();
     });
 
     btnSendIncident.setOnClickListener(v -> {
-      String tipoIncidencia = imageViewTipoIncidencia.getText().toString();
-      String localizacion = imageViewLocalizacion.getText().toString();
-      String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-      int usuarioId = dbManager.obtenerIdUltimoUsuario();
-      String status = "Pendiente";
-
-
-      if (tipoIncidencia.isEmpty() || localizacion.isEmpty() || fecha.isEmpty() || currentPhotoPath == null || currentPhotoPath.isEmpty() || status.isEmpty()) {
-
-        Toast.makeText(getContext(), Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.incident_send_bad_no_data)  + "</b></font>"), Toast.LENGTH_SHORT).show();
-        return;
-      }
-
-      boolean estadoInsertado = dbManager.insertarIncidencia(usuarioId, tipoIncidencia, localizacion, currentPhotoPath, fecha, status);
-      if (estadoInsertado) {
-        Toast.makeText(getContext(), getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show();
-      } else {
-        Toast.makeText(getContext(), Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.incident_send_bad) + "</b></font>"), Toast.LENGTH_SHORT).show();
-      }
-
-      imageViewTipoIncidencia.setText("");
-      imageViewLocalizacion.setText("");
-      imageView.setImageResource(0);
-      currentBitmap = null;
-      currentPhotoPath = null;
+      pushBtnSendIncident();
     });
 
     btnViewIncident.setOnClickListener(v -> {
-      NavController navController = NavHostFragment.findNavController(HomeFragment.this);
-      navController.navigate(R.id.nav_Incidents);
+      pushBtnViewIncent();
     });
 
     return root;
+  }
+
+  private void pushBtnTakePhoto() {
+    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA)
+      != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+    } else {
+      openCamera();
+    }
+  }
+
+  private void pushBtnViewIncent() {
+    NavController navController = NavHostFragment.findNavController(HomeFragment.this);
+    navController.navigate(R.id.nav_Incidents);
+  }
+
+  private void pushBtnSendIncident() {
+    String tipoIncidencia = imageViewTipoIncidencia.getText().toString();
+    String localizacion = imageViewLocalizacion.getText().toString();
+    String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+    String status = "Pendiente";
+
+    if (tipoIncidencia.isEmpty() || localizacion.isEmpty() || fecha.isEmpty() || currentPhotoPath == null || currentPhotoPath.isEmpty() || status.isEmpty()) {
+      Toast.makeText(getContext(), "Todos los campos deben ser completos", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    saveIncidentToFirestore(tipoIncidencia, localizacion, currentPhotoPath, fecha, status);
+
+    imageViewTipoIncidencia.setText("");
+    imageViewLocalizacion.setText("");
+    imageView.setImageResource(0);
+    currentBitmap = null;
+    currentPhotoPath = null;
   }
 
   private void openCamera() {
@@ -173,7 +180,6 @@ public class HomeFragment extends Fragment {
     imageView.setImageBitmap(bitmap);
     currentBitmap = bitmap;
 
-
     imageViewTipoIncidencia.setText("Asfalto roto");
 
     if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -211,5 +217,40 @@ public class HomeFragment extends Fragment {
     currentPhotoPath = image.getAbsolutePath();
     Log.d("RutaImagen", "Ruta de la imagen: " + currentPhotoPath);
     return image;
+  }
+
+  private void saveIncidentToFirestore(String tipoIncidencia, String localizacion, String imageUrl, String fecha, String status) {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    if (user != null) {
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+      // Los datos de la incidencia que vas a guardar
+      Map<String, Object> incidentData = new HashMap<>();
+      incidentData.put("usuario_id", user.getUid());
+      incidentData.put("tipo_incidencia", tipoIncidencia);
+      incidentData.put("localizacion", localizacion);
+      incidentData.put("foto", imageUrl); // URL de la imagen en Firebase Storage
+      incidentData.put("fecha", fecha);
+      incidentData.put("status", status);
+
+      db.collection("incidencias")
+        .add(incidentData)
+        .addOnSuccessListener(documentReference -> {
+          String incidentId = documentReference.getId();
+
+          incidentData.put("uid", incidentId);
+
+          documentReference.update("uid", incidentId)
+            .addOnSuccessListener(aVoid -> {
+              Toast.makeText(getContext(), "Incidencia registrada correctamente con UID", Toast.LENGTH_SHORT).show();
+            })
+            .addOnFailureListener(e -> {
+              Toast.makeText(getContext(), "Error al actualizar el UID en la incidencia", Toast.LENGTH_SHORT).show();
+            });
+        })
+        .addOnFailureListener(e -> {
+          Toast.makeText(getContext(), "Error al registrar incidencia", Toast.LENGTH_SHORT).show();
+        });
+    }
   }
 }

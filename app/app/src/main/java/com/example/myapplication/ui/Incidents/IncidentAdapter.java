@@ -2,6 +2,7 @@ package com.example.myapplication.ui.Incidents;
 
 import android.content.Context;
 import android.graphics.Color;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,13 +11,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
+import com.example.myapplication.ui.Home.HomeFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.IncidentViewHolder> {
@@ -42,27 +45,38 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
     Incident incidencia = listaIncidencias.get(position);
 
-    holder.txtTypeIncident.setText(String.valueOf(incidencia.getTipo()));
+    holder.txtTypeIncident.setText(String.valueOf(incidencia.getTipoIncidencia()));
+    holder.btnView.setOnClickListener(v -> pushBtnViewIncient(incidencia));
     String estado = incidencia.getStatus().toLowerCase();
-    Log.d("DATABASE", "Estado :" + estado);
 
     switch (estado) {
       case "pendiente":
         holder.txtStatus.setText(incidencia.getStatus());
-        holder.txtStatus.setTextColor(Color.parseColor("#FFCDD2"));
+        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.red));
         break;
       case "en proceso":
         holder.txtStatus.setText(incidencia.getStatus());
-        holder.txtStatus.setTextColor(Color.parseColor("#FFF9C4"));
+        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.yellow));
         break;
       case "resuelta":
         holder.txtStatus.setText(incidencia.getStatus());
-        holder.txtStatus.setTextColor(Color.parseColor("#C8E6C9"));
+        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.green));
         break;
       default:
         holder.txtStatus.setText(incidencia.getStatus());
         break;
     }
+
+
+  }
+
+  private void pushBtnViewIncient(Incident incidencia){
+    Bundle bundle = new Bundle();
+    bundle.putString("incident_id", incidencia.getUid());
+    Log.e("FIREBASE", "id_incdent enviada: "+incidencia.getUid());
+
+
+    navController.navigate(R.id.nav_checkIncident, bundle);
   }
 
   @Override

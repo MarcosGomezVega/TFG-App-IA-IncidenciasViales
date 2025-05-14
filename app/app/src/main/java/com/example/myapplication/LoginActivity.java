@@ -13,7 +13,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.view.View;
 
-import com.example.myapplication.database.DBManager;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Login activity that allows the user to log with his email, and his password
@@ -23,9 +24,10 @@ import com.example.myapplication.database.DBManager;
  */
 public class LoginActivity extends AppCompatActivity{
 
-  private DBManager dbManager;
   private  Button buttonLogin;
   private  Button buttonCreateAccount;
+  private FirebaseAuth mAuth;
+
 
   /**
    * Called when the activity is starting.
@@ -39,13 +41,12 @@ public class LoginActivity extends AppCompatActivity{
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
-    dbManager = new DBManager(this);
+    mAuth = FirebaseAuth.getInstance();
 
     buttonLogin = findViewById(R.id.buttonLogin);
     buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
 
     buttonLogin.setOnClickListener(v -> push_LoginButton(v));
-
     buttonCreateAccount.setOnClickListener(v -> push_CreateAccountButton(v));
   }
 
@@ -57,30 +58,13 @@ public class LoginActivity extends AppCompatActivity{
   protected void onStart() {
     super.onStart();
 
-
-    SharedPreferences sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE);
-    boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
-    int userId = sharedPreferences.getInt("user_id", -1);
-
-    if (isLoggedIn && dbManager.userExistsInDatabase(userId)) {
-      Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-      startActivity(intent);
+    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+    Log.d("FIREBASE","El usairo activo es: " + currentUser);
+    if (currentUser != null) {
+      startActivity(new Intent(LoginActivity.this, MainActivity.class));
       finish();
-    } else {
-      SharedPreferences.Editor editor = sharedPreferences.edit();
-      editor.clear();
-      editor.apply();
     }
   }
-
-  private void loginUser(int usuarioId) {
-    SharedPreferences sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE);
-    SharedPreferences.Editor editor = sharedPreferences.edit();
-    editor.putBoolean("is_logged_in", true);
-    editor.putInt("user_id", usuarioId);
-    editor.apply();
-  }
-
 
   /**
    * Handles the login button click.
@@ -92,29 +76,27 @@ public class LoginActivity extends AppCompatActivity{
     EditText editText_email = findViewById(R.id.emailLogin);
     EditText editText_password = findViewById(R.id.passwordLogin);
 
-    String email = editText_email.getText().toString();
-    String password = editText_password.getText().toString();
+    String email = editText_email.getText().toString().trim();
+    String password = editText_password.getText().toString().trim();
 
     if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
       Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.gaps_empty) + "</b></font>"), Toast.LENGTH_SHORT).show();
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
       Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.invalid_email) + "</b></font>"), Toast.LENGTH_SHORT).show();
     } else {
-      boolean validacionUser = dbManager.validarUsuario(email, password);
-
-      if (validacionUser) {
-        int usuarioId = dbManager.obtnerIdPorCorreo(email);
-        dbManager.actualizarFechaLogin(usuarioId);
-
-        loginUser(usuarioId);
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
-      } else {
-        Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.email_passwd_dont_match) + "</b></font>"), Toast.LENGTH_SHORT).show();
-      }
+      mAuth.signInWithEmailAndPassword(email, password)
+        .addOnCompleteListener(this, task -> {
+          if (task.isSuccessful()) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+          } else {
+            Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.email_passwd_dont_match) + "</b></font>"), Toast.LENGTH_SHORT).show();
+          }
+        });
     }
   }
+
 
   /**
    * Handles the create account button click.

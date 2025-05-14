@@ -1,26 +1,29 @@
 package com.example.myapplication;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Menu;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.example.myapplication.database.DBManager;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     binding = ActivityMainBinding.inflate(getLayoutInflater());
     setContentView(binding.getRoot());
+
 
     setSupportActionBar(binding.appBarMain.toolbar);
 
@@ -65,18 +69,30 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
+    drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+      @Override
+      public void onDrawerOpened(View drawerView) {
+        actualizarNavHeader();
+      }
+      @Override
+      public void onDrawerClosed(View drawerView) {}
+
+      @Override
+      public void onDrawerSlide(View drawerView, float slideOffset) {}
+
+      @Override
+      public void onDrawerStateChanged(int newState) {}
+    });
   }
-    private void logoutUser() {
-    SharedPreferences sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE);
-    SharedPreferences.Editor editor = sharedPreferences.edit();
-    editor.putBoolean("is_logged_in", false);
-    editor.remove("user_id");
-    editor.apply();
+
+  private void logoutUser() {
+    FirebaseAuth.getInstance().signOut();
 
     Intent intent = new Intent(MainActivity.this, LoginActivity.class);
     startActivity(intent);
     finish();
   }
+
 
   @Override
   public boolean onSupportNavigateUp() {
@@ -91,4 +107,41 @@ public class MainActivity extends AppCompatActivity {
     return true;
   }
 
+  private void actualizarNavHeader() {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    if (user != null) {
+      View headerView = binding.navView.getHeaderView(0);
+
+      TextView nombreTextView = headerView.findViewById(R.id.nav_header_nombre);
+      TextView emailTextView = headerView.findViewById(R.id.nav_header_email);
+
+      ImageView avatarImageView = headerView.findViewById(R.id.imageView);
+
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+      String userId = user.getUid();
+      Log.d("FIREBASE", "UserId: " + userId );
+
+
+      db.collection("users").document(userId).get()
+        .addOnSuccessListener(documentSnapshot -> {
+          if (documentSnapshot.exists()) {
+            String nombre = documentSnapshot.getString("nombre");
+            Log.d("FIREBASE", "Nombre: " + documentSnapshot.getString("nombre"));
+            String email = documentSnapshot.getString("email");
+            Log.d("FIREBASE", "Email: " + documentSnapshot.getString("email"));
+            String avatarUrl = documentSnapshot.getString("avatar");
+
+            nombreTextView.setText(nombre);
+            emailTextView.setText(email);
+          }
+        })
+        .addOnFailureListener(e -> {
+          Log.e("Firebase", "Error al obtener los datos del usuario", e);
+        });
+    } else {
+      Log.e("Firebase", "No hay usuario autenticado");
+    }
+  }
 }
