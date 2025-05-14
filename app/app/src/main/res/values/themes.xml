@@ -17,6 +17,8 @@
 
     <item name="colorSurface">@color/surface</item>
     <item name="colorOnSurface">@color/onSurface</item>
+
+
   </style>
 
   <style name="Theme.MyApplication.NoActionBar">

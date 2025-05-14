@@ -15,7 +15,7 @@
     android:ellipsize="end"
     android:maxLines="1"
     android:text="@string/type_incident"
-    android:textColor="@color/colorPrimary"
+    android:textColor="@color/black"
     android:textSize="16sp" />
 
   <TextView
@@ -27,7 +27,7 @@
     android:maxLines="1"
     android:paddingEnd="8dp"
     android:text="@string/status_incident_list"
-    android:textColor="@color/colorPrimary"
+    android:textColor="@color/black"
     android:textSize="16sp" />
 
   <Button

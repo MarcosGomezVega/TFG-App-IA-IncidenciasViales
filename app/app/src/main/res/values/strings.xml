@@ -44,12 +44,13 @@
   <string name="login_failed">Inicio de sesión fallido</string>
   <string name="look_incident">Ver mis incidencias</string>
   <string name="menu_config">Configuración</string>
-  <string name="menu_gallery">Incidencias</string>
+  <string name="menu_incident">Incidencias</string>
+  <string name="menu_checkIncident">Mirar Incidencia</string>
   <string name="menu_home">Home</string>
   <string name="menu_info">Información</string>
   <string name="menu_logout">Cerrar Cuenta</string>
   <string name="menu_settings">Ajustes</string>
-  <string name="menu_share">Compoartir</string>
+  <string name="menu_share">Compartir</string>
   <string name="menu_slideshow">Comprobar Incidencia</string>
   <string name="name_app">IA Incidencias Viales</string>
   <string name="nav_header_desc">Navigation header</string>
@@ -102,6 +103,8 @@
   <string name="dialog_delete_account_no">No</string>
   <string name="toast_account_deleted">Cuenta eliminada con éxito</string>
   <string name="toast_account_delete_failed">No se pudo eliminar la cuenta</string>
+  <string name="toast_error_reauthenticating">Error, correo o contraseña actual no coinciden</string>
+  <string name="toast_current_email_not_match">Error, el correo no coincide con el correo actual del usuario</string>
 
   <string-array name="languages_array">
     <item>Español</item>

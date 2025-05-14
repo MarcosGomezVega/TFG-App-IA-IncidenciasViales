@@ -25,4 +25,8 @@
 
   <color name="colorAccent">#9C4DFF</color>
 
+  <color name="red">#FF0202</color>
+  <color name="yellow">#FDC600</color>
+  <color name="green">#3BFA19</color>
+
 </resources>
