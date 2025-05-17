@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.Config;
+package com.example.myapplication.ui.config;
 
 
 
@@ -129,6 +129,7 @@ public class ConfigFragment extends Fragment {
 
       @Override
       public void onNothingSelected(AdapterView<?> parent) {
+        // Noncompliant - method is empty
       }
     });
   }

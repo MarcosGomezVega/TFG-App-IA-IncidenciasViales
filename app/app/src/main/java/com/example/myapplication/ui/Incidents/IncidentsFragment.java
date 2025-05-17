@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.Incidents;
+package com.example.myapplication.ui.incidents;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,16 +25,14 @@ import java.util.ArrayList;
 
 public class IncidentsFragment extends Fragment {
 
-  private RecyclerView recyclerViewIncidencia;
-  private ArrayList<Incident> incidents;
-
+  @Override
   public View onCreateView(@NonNull LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
 
     View root = inflater.inflate(R.layout.fragment_incidents, container, false);
 
-    recyclerViewIncidencia = root.findViewById(R.id.recyclerViewIncidencias);
-    incidents = new ArrayList<>();
+    RecyclerView recyclerViewIncidencia = root.findViewById(R.id.recyclerViewIncidencias);
+    ArrayList<Incident> incidents = new ArrayList<>();
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     if (user != null) {

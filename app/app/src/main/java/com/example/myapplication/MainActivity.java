@@ -52,20 +52,16 @@ public class MainActivity extends AppCompatActivity {
     NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
     NavigationUI.setupWithNavController(navigationView, navController);
 
-    navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-      @Override
-      public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.nav_logout) {
-          logoutUser();
-          return true;
-        } else {
-          boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-          if (handled) {
-            DrawerLayout drawer = binding.drawerLayout;
-            drawer.closeDrawers();
-          }
-          return handled;
+    navigationView.setNavigationItemSelectedListener(item -> {
+      if (item.getItemId() == R.id.nav_logout) {
+        logoutUser();
+        return true;
+      } else {
+        boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+        if (handled) {
+          binding.drawerLayout.closeDrawers();
         }
+        return handled;
       }
     });
 
@@ -75,13 +71,19 @@ public class MainActivity extends AppCompatActivity {
         actualizarNavHeader();
       }
       @Override
-      public void onDrawerClosed(View drawerView) {}
+      public void onDrawerClosed(View drawerView) {
+        // Noncompliant - method is empty
+         }
 
       @Override
-      public void onDrawerSlide(View drawerView, float slideOffset) {}
+      public void onDrawerSlide(View drawerView, float slideOffset) {
+        // Noncompliant - method is empty
+      }
 
       @Override
-      public void onDrawerStateChanged(int newState) {}
+      public void onDrawerStateChanged(int newState) {
+        // Noncompliant - method is empty
+      }
     });
   }
 
@@ -116,32 +118,23 @@ public class MainActivity extends AppCompatActivity {
       TextView nombreTextView = headerView.findViewById(R.id.nav_header_nombre);
       TextView emailTextView = headerView.findViewById(R.id.nav_header_email);
 
-      ImageView avatarImageView = headerView.findViewById(R.id.imageView);
-
       FirebaseFirestore db = FirebaseFirestore.getInstance();
 
       String userId = user.getUid();
-      Log.d("FIREBASE", "UserId: " + userId );
 
 
       db.collection("users").document(userId).get()
         .addOnSuccessListener(documentSnapshot -> {
           if (documentSnapshot.exists()) {
             String nombre = documentSnapshot.getString("nombre");
-            Log.d("FIREBASE", "Nombre: " + documentSnapshot.getString("nombre"));
             String email = documentSnapshot.getString("email");
-            Log.d("FIREBASE", "Email: " + documentSnapshot.getString("email"));
-            String avatarUrl = documentSnapshot.getString("avatar");
 
             nombreTextView.setText(nombre);
             emailTextView.setText(email);
           }
         })
         .addOnFailureListener(e -> {
-          Log.e("Firebase", "Error al obtener los datos del usuario", e);
         });
-    } else {
-      Log.e("Firebase", "No hay usuario autenticado");
     }
   }
 }

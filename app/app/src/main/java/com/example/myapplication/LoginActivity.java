@@ -3,7 +3,6 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -24,10 +23,9 @@ import com.google.firebase.auth.FirebaseUser;
  */
 public class LoginActivity extends AppCompatActivity{
 
-  private  Button buttonLogin;
-  private  Button buttonCreateAccount;
-  private FirebaseAuth mAuth;
 
+  private static final String HTML_RED_BOLD_OPEN = "<font color='#FF0000'><b>";
+  private static final String HTML_BOLD_CLOSE = "</b></font>";
 
   /**
    * Called when the activity is starting.
@@ -41,13 +39,13 @@ public class LoginActivity extends AppCompatActivity{
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
-    mAuth = FirebaseAuth.getInstance();
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
-    buttonLogin = findViewById(R.id.buttonLogin);
-    buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
+    Button buttonLogin = findViewById(R.id.buttonLogin);
+    Button buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
 
-    buttonLogin.setOnClickListener(v -> push_LoginButton(v));
-    buttonCreateAccount.setOnClickListener(v -> push_CreateAccountButton(v));
+    buttonLogin.setOnClickListener(v -> pushLoginButton(v, mAuth));
+    buttonCreateAccount.setOnClickListener(this:: pushCreateAccountButton);
   }
 
   /**
@@ -72,17 +70,17 @@ public class LoginActivity extends AppCompatActivity{
    *
    * @param v the view that was clicked
    */
-  public void push_LoginButton(View v) {
-    EditText editText_email = findViewById(R.id.emailLogin);
-    EditText editText_password = findViewById(R.id.passwordLogin);
+  public void pushLoginButton(View v,FirebaseAuth mAuth ) {
+    EditText editTextEmail = findViewById(R.id.emailLogin);
+    EditText editTextPassword = findViewById(R.id.passwordLogin);
 
-    String email = editText_email.getText().toString().trim();
-    String password = editText_password.getText().toString().trim();
+    String email = editTextEmail.getText().toString().trim();
+    String password = editTextPassword.getText().toString().trim();
 
     if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-      Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.gaps_empty) + "</b></font>"), Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.gaps_empty) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-      Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.invalid_email) + "</b></font>"), Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.invalid_email) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
     } else {
       mAuth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener(this, task -> {
@@ -91,7 +89,7 @@ public class LoginActivity extends AppCompatActivity{
             startActivity(intent);
             finish();
           } else {
-            Toast.makeText(LoginActivity.this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.email_passwd_dont_match) + "</b></font>"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.email_passwd_dont_match) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
           }
         });
     }
@@ -104,7 +102,7 @@ public class LoginActivity extends AppCompatActivity{
    *
    * @param v the view that was clicked
    */
-  public void push_CreateAccountButton(View v) {
+  public void pushCreateAccountButton(View v) {
     Intent intent = new Intent(LoginActivity.this, CreateAccountActivity.class);
     startActivity(intent);
   }

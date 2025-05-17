@@ -1,7 +1,6 @@
-package com.example.myapplication.ui.Incidents;
+package com.example.myapplication.ui.incidents;
 
 import android.content.Context;
-import android.graphics.Color;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -13,12 +12,10 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
-import com.example.myapplication.ui.Home.HomeFragment;
 
 import java.util.List;
 

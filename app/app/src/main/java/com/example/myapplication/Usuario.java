@@ -1,29 +1,29 @@
 package com.example.myapplication;
 
 public class Usuario {
-  public String nombre;
-  public String password;
-  public String email;
+  private String nombre;
+  private String password;
+  private String email;
 
-  public int id;
-  public String path_avatar;
+  private int id;
+  private String pathAvatar;
 
   public Usuario(int id, String nombre, String password) {
     this.id=id;
     this.nombre = nombre;
     this.password = password;
   }
-  public Usuario(int id, String nombre, String password, String path_avatar) {
+  public Usuario(int id, String nombre, String password, String pathAvatar) {
     this.id=id;
     this.nombre = nombre;
     this.password = password;
-    this.path_avatar=path_avatar;
+    this.pathAvatar=pathAvatar;
   }
-  public Usuario(String nombre,int id, String email, String path_avatar) {
+  public Usuario(String nombre,int id, String email, String pathAvatar) {
     this.id=id;
     this.nombre = nombre;
     this.email = email;
-    this.path_avatar=path_avatar;
+    this.pathAvatar=pathAvatar;
   }
 
   public int getId() {
@@ -37,7 +37,7 @@ public class Usuario {
     return password;
   }
 
-  public String getPath_avatar() {return path_avatar; }
+  public String getPathAvatar() {return pathAvatar; }
 
   public String getEmail() { return email;}
 }

@@ -4,25 +4,25 @@ import com.google.firebase.firestore.PropertyName;
 
 public class Incident {
   private String uid;
-  private String tipo_incidencia;
+  private String tipoIncidencia;
   private String localizacion;
   private String foto;
   private String fecha;
   private String status;
-  private String usuario_id;
+  private String usuarioId;
 
   public Incident() {
 
   }
 
-  public Incident(String uid, String tipo_incidencia, String localizacion, String foto, String fecha, String status, String usuario_id) {
+  public Incident(String uid, String tipoIncidencia, String localizacion, String foto, String fecha, String status, String usuarioId) {
     this.uid = uid;
-    this.tipo_incidencia = tipo_incidencia;
+    this.tipoIncidencia = tipoIncidencia;
     this.localizacion = localizacion;
     this.foto = foto;
     this.fecha = fecha;
     this.status = status;
-    this.usuario_id = usuario_id;
+    this.usuarioId = usuarioId;
   }
 
   public String getUid() {
@@ -35,12 +35,12 @@ public class Incident {
 
   @PropertyName("tipo_incidencia")
   public String getTipoIncidencia() {
-    return tipo_incidencia;
+    return tipoIncidencia;
   }
 
   @PropertyName("tipo_incidencia")
-  public void setTipoIncidencia(String tipo_incidencia) {
-    this.tipo_incidencia = tipo_incidencia;
+  public void setTipoIncidencia(String tipoIncidencia) {
+    this.tipoIncidencia = tipoIncidencia;
   }
 
   public String getLocalizacion() {
@@ -75,11 +75,11 @@ public class Incident {
     this.status = status;
   }
 
-  public String getUsuario_id() {
-    return usuario_id;
+  public String getUsuarioId() {
+    return usuarioId;
   }
 
-  public void setUsuario_id(String usuario_id) {
-    this.usuario_id = usuario_id;
+  public void setUsuarioId(String usuarioId) {
+    this.usuarioId = usuarioId;
   }
 }

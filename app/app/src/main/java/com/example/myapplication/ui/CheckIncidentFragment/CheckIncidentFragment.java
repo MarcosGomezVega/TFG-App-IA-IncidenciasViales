@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.CheckIncidentFragment;
+package com.example.myapplication.ui.checkincidentfragment;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -25,14 +25,9 @@ import java.io.File;
 
 public class CheckIncidentFragment extends Fragment {
 
-  private TextView txtType_incident;
-  private ImageView imgView;
-  private TextView txtLocalitation;
-  private TextView txtDate;
-  private TextView txtStatus;
   private String imageUrl;
-  private String id_incident;
-  private FirebaseFirestore db;
+  private String idIncident;
+
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater,
@@ -40,27 +35,26 @@ public class CheckIncidentFragment extends Fragment {
 
     View root = inflater.inflate(R.layout.fragment_checkincidents, container, false);
 
-    txtType_incident = root.findViewById(R.id.txt_TypeIncident);
-    imgView = root.findViewById(R.id.imagePreview);
-    txtLocalitation = root.findViewById(R.id.textLocation);
-    txtDate = root.findViewById(R.id.textDate);
-    txtStatus = root.findViewById(R.id.textStatus);
+    TextView txtTypeIncident = root.findViewById(R.id.txt_TypeIncident);
+    ImageView imgView = root.findViewById(R.id.imagePreview);
+    TextView txtLocalitation = root.findViewById(R.id.textLocation);
+    TextView txtDate = root.findViewById(R.id.textDate);
+    TextView txtStatus = root.findViewById(R.id.textStatus);
 
     Bundle args = getArguments();
     if (args != null) {
-      id_incident = args.getString("incident_id");
+      idIncident = args.getString("incident_id");
     }
 
-    db = FirebaseFirestore.getInstance();
-    db.collection("incidencias").document(id_incident).get()
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    db.collection("incidencias").document(idIncident).get()
       .addOnSuccessListener(documentSnapshot -> {
         if (documentSnapshot.exists()) {
           Incident incident = documentSnapshot.toObject(Incident.class);
 
           if (incident != null) {
 
-            txtType_incident.setText(incident.getTipoIncidencia());
-            Log.d("FIREBASE", "Tipo de Incidencia: " + incident.getTipoIncidencia() );
+            txtTypeIncident.setText(incident.getTipoIncidencia());
             imageUrl = incident.getFoto();
 
             File imgFile = new File(imageUrl);
@@ -97,8 +91,6 @@ public class CheckIncidentFragment extends Fragment {
                 break;
             }
           }
-        } else {
-          Log.e("FIREBASE", "El documento no existe");
         }
       })
       .addOnFailureListener(e -> Log.e("FIREBASE", "Error al obtener el documento", e));
