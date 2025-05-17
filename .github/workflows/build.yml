@@ -36,6 +36,9 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # Aquí especificamos que la ejecución se haga desde la raíz,
+        # donde está la carpeta `app`
+        working-directory: ./
         with:
           args: >
             -Dsonar.projectKey=MarcosGomezVega_TFG-App-IA-IncidenciasViales
