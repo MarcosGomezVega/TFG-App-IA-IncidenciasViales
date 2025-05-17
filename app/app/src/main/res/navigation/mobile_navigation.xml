@@ -7,24 +7,24 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.myapplication.ui.Home.HomeFragment"
+        android:name="com.example.myapplication.ui.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_Incidents"
-        android:name="com.example.myapplication.ui.Incidents.IncidentsFragment"
+        android:name="com.example.myapplication.ui.incidents.IncidentsFragment"
         android:label="@string/menu_incident"
         tools:layout="@layout/fragment_incidents" />
 
     <fragment
       android:id="@+id/nav_checkIncident"
-      android:name="com.example.myapplication.ui.CheckIncidentFragment.CheckIncidentFragment"
+      android:name="com.example.myapplication.ui.checkincidentfragment.CheckIncidentFragment"
       android:label="@string/menu_checkIncident"
       tools:layout="@layout/fragment_checkincidents"/>
   <fragment
     android:id="@+id/nav_config"
-    android:name="com.example.myapplication.ui.Config.ConfigFragment"
+    android:name="com.example.myapplication.ui.config.ConfigFragment"
     android:label="@string/menu_config"
     tools:layout="@layout/fragment_config" />
 
