@@ -42,7 +42,6 @@ node_modules/
 
 # Other system-specific files that may be generated on different systems
 *.class
-*.jar
 *.war
 *.ear
 
