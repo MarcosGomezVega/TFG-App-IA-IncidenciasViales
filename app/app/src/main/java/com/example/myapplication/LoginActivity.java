@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -9,30 +10,31 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import android.view.View;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
- * Login activity that allows the user to log with his email, and his password
+ * Actividad de inicio de sesión que permite al usuario iniciar sesión con su correo electrónico y contraseña.
  *
  * @author Marcos Gomez Vega
  * @version 1.0
  */
-public class LoginActivity extends AppCompatActivity{
-
+public class LoginActivity extends AppCompatActivity {
 
   private static final String HTML_RED_BOLD_OPEN = "<font color='#FF0000'><b>";
   private static final String HTML_BOLD_CLOSE = "</b></font>";
 
   /**
-   * Called when the activity is starting.
-   * Initializes UI components and sets click listeners for login and create account buttons.
+   * Llamado cuando la actividad está comenzando.
+   * Inicializa los componentes de la interfaz de usuario y establece los listeners para los botones de inicio de sesión y creación de cuenta.
    *
-   * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-   *                           this Bundle contains the most recent data. Otherwise, it is null.
+   * @param savedInstanceState Si la actividad está siendo reinicializada después de haber sido cerrada previamente,
+   *                           este Bundle contiene los datos más recientes. De lo contrario, es nulo.
    */
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -41,23 +43,27 @@ public class LoginActivity extends AppCompatActivity{
 
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
+
     Button buttonLogin = findViewById(R.id.buttonLogin);
     Button buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
+    ImageButton imageButtonGoogle = findViewById(R.id.buttonGoogle);
+    ImageButton imageButtonFacebook = findViewById(R.id.buttonFacebook);
 
     buttonLogin.setOnClickListener(v -> pushLoginButton(v, mAuth));
-    buttonCreateAccount.setOnClickListener(this:: pushCreateAccountButton);
+    buttonCreateAccount.setOnClickListener(this::pushCreateAccountButton);
+    imageButtonFacebook.setOnClickListener(v -> pushLoginFacebook());
+    imageButtonGoogle.setOnClickListener(v -> pushLoginGoogle());
   }
 
   /**
-   * Called after onCreate() or after the activity has been stopped and is restarting.
-   * Checks if there are already registered users; if so, redirects to the main activity.
+   * Llamado después de onCreate() o después de que la actividad haya sido detenida y se esté reiniciando.
+   * Verifica si ya hay usuarios registrados; si es así, redirige a la actividad principal.
    */
   @Override
   protected void onStart() {
     super.onStart();
 
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-    Log.d("FIREBASE","El usairo activo es: " + currentUser);
     if (currentUser != null) {
       startActivity(new Intent(LoginActivity.this, MainActivity.class));
       finish();
@@ -65,12 +71,12 @@ public class LoginActivity extends AppCompatActivity{
   }
 
   /**
-   * Handles the login button click.
-   * Validates the email and password, shows error messages if needed, and logs in if credentials are valid.
+   * Maneja el clic del botón de inicio de sesión.
+   * Valida el correo electrónico y la contraseña, muestra mensajes de error si es necesario, e inicia sesión si las credenciales son válidas.
    *
-   * @param v the view that was clicked
+   * @param v la vista que fue clicada
    */
-  public void pushLoginButton(View v,FirebaseAuth mAuth ) {
+  private void pushLoginButton(View v, FirebaseAuth mAuth) {
     EditText editTextEmail = findViewById(R.id.emailLogin);
     EditText editTextPassword = findViewById(R.id.passwordLogin);
 
@@ -97,14 +103,22 @@ public class LoginActivity extends AppCompatActivity{
 
 
   /**
-   * Handles the create account button click.
-   * Navigates the user to the account creation screen.
+   * Maneja el clic del botón de crear cuenta.
+   * Navega al usuario hacia la pantalla de creación de cuenta.
    *
-   * @param v the view that was clicked
+   * @param v la vista que fue clicada
    */
-  public void pushCreateAccountButton(View v) {
+  private void pushCreateAccountButton(View v) {
     Intent intent = new Intent(LoginActivity.this, CreateAccountActivity.class);
     startActivity(intent);
+  }
+
+  private void pushLoginFacebook() {
+
+  }
+
+  private void pushLoginGoogle(){
+
   }
 
 }

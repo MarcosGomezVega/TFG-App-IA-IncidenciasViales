@@ -1,9 +1,14 @@
 package com.example.myapplication.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -29,6 +34,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +45,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.Manifest;
 
 import androidx.core.content.FileProvider;
@@ -48,33 +56,127 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import org.tensorflow.lite.Interpreter;
 
+/**
+ * Fragmento principal de la aplicación que permite:
+ * - Tomar una foto de una incidencia vial.
+ * - Clasificar la imagen con un modelo de IA (TensorFlow Lite).
+ * - Permitir la selección manual del tipo de incidencia si la predicción es poco confiable.
+ * - Obtener la ubicación actual del dispositivo.
+ * - Enviar la incidencia a Firebase Firestore.
+ * - Navegar a la vista de incidencias registradas.
+ */
 public class HomeFragment extends Fragment {
 
+  /**
+   * Vista para mostrar la imagen capturada
+   */
   private ImageView imageView;
-  private TextView imageViewTipoIncidencia;
+
+  /**
+   * Texto para mostrar el tipo de incidencia detectada
+   */
+  private TextView imageViewIncidentType;
+
+  /**
+   * Texto para mostrar la ubicación detectada
+   */
   private TextView imageViewLocalizacion;
+
+  /**
+   * Ruta del archivo de la imagen capturada
+   */
   private String currentPhotoPath;
 
-  // Launcher para tomar foto con Uri
+  /**
+   * Selector para escoger manualmente el tipo de incidencia
+   */
+  private Spinner spinnerIncidentType;
+
+  /**
+   * Lanzador para tomar una foto
+   */
   private ActivityResultLauncher<Uri> takePictureLauncher;
 
-  // Launcher para pedir permiso cámara
+  /**
+   * Lanzador para pedir permiso de la cámara
+   */
   private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
+  /**
+   * Porcentaje de confianza de la predicción del modelo
+   */
+  private int incidentPercentage;
+
+  /**
+   * Tipo de incidencia seleccionado o detectado
+   */
+  private String incidentType;
+
+  /**
+   * Crea la vista del fragmento e inicializa los elementos de la interfaz y los listeners de botones.
+   *
+   * @param inflater           El objeto LayoutInflater para inflar vistas en el fragmento.
+   * @param container          El contenedor donde se inflará la vista.
+   * @param savedInstanceState Datos del estado previamente guardado, si existen.
+   * @return La vista raíz del fragmento inflada.
+   */
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
 
     View root = inflater.inflate(R.layout.fragment_home, container, false);
 
+    requestPermissionsAtStartup();
+
     Button btnTakePhoto = root.findViewById(R.id.btnTakePhoto);
     Button btnSendIncident = root.findViewById(R.id.btnSendIncident);
     Button btnViewIncident = root.findViewById(R.id.btnViewIncidences);
     imageView = root.findViewById(R.id.imagePreview);
-    imageViewTipoIncidencia = root.findViewById(R.id.textDetectedType);
+    imageViewIncidentType = root.findViewById(R.id.textDetectedType);
     imageViewLocalizacion = root.findViewById(R.id.textLocation);
+    spinnerIncidentType = root.findViewById(R.id.spinnerIncidentType);
 
-    // Registrar launcher para tomar foto
+    String[] clases = {"Selecione una incidencia ...", "Grieta", "Bache leve", "Bache medio", "Bache grave", "Poste caído"};
+
+    setupSpinner(clases);
+    setupActivityLauncher(clases);
+
+    btnTakePhoto.setOnClickListener(v -> pushBtnTakePhoto());
+    btnSendIncident.setOnClickListener(v -> pushBtnSendIncident());
+    btnViewIncident.setOnClickListener(v -> pushBtnViewIncent());
+
+    return root;
+  }
+
+  /**
+   * Configura el Spinner que permite seleccionar manualmente un tipo de incidencia.
+   *
+   * @param clases Array de strings que representan las clases de incidencias posibles.
+   */
+  private void setupSpinner(String[] clases) {
+
+
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(requireContext(),
+      android.R.layout.simple_spinner_dropdown_item, clases) {
+      @Override
+      public View getView(int position, View convertView, ViewGroup parent) {
+        TextView view = new TextView(getContext());
+        view.setText("");
+        return view;
+      }
+    };
+    spinnerIncidentType.setAdapter(adapter);
+    spinnerIncidentType.setVisibility(View.GONE);
+
+
+  }
+
+  /**
+   * Inicializa los lanzadores de actividades y permisos para tomar fotos y obtener la localización.
+   *
+   * @param clases Array de strings con los tipos de incidencias para mostrar en caso de baja confianza.
+   */
+  private void setupActivityLauncher(String[] clases) {
     takePictureLauncher = registerForActivityResult(
       new ActivityResultContracts.TakePicture(),
       result -> {
@@ -82,84 +184,116 @@ public class HomeFragment extends Fragment {
           Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
           if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
-            predecirTipoIncidencia(bitmap);
-            obtenerUltimaUbicacion();
+            incidentPercentage = predictIncidentType(bitmap);
+            if (incidentPercentage < 95) {
+              spinner(clases);
+            }
+            getLastLocation();
           }
-        } else {
-          Toast.makeText(getContext(), "No se tomó la foto", Toast.LENGTH_SHORT).show();
         }
       }
     );
+  }
 
-    // Registrar launcher para permiso cámara
-    requestCameraPermissionLauncher = registerForActivityResult(
-      new ActivityResultContracts.RequestPermission(),
-      isGranted -> {
-        if (Boolean.TRUE.equals(isGranted)) {
-          openCamera();
-        } else {
+  private void requestPermissionsAtStartup() {
+    ActivityResultLauncher<String[]> multiplePermissionLauncher =
+      registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+        Boolean cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
+        Boolean locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+
+        if (!cameraGranted) {
           Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
         }
-      }
-    );
 
-    // Registrar launcher para permiso ubicación COMO VARIABLE LOCAL
-    ActivityResultLauncher<String> requestLocationPermissionLauncher = registerForActivityResult(
-      new ActivityResultContracts.RequestPermission(),
-      isGranted -> {
-        if (Boolean.FALSE.equals(isGranted)) {
+        if (!locationGranted) {
           Toast.makeText(getContext(), getString(R.string.permission_locattion_not_enable), Toast.LENGTH_SHORT).show();
         }
-      }
-    );
+      });
 
-    // Pedir permiso ubicación si no está concedido
-    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-      != PackageManager.PERMISSION_GRANTED) {
-      requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-    }
-
-    btnTakePhoto.setOnClickListener(v -> pushBtnTakePhoto());
-
-    btnSendIncident.setOnClickListener(v -> pushBtnSendIncident());
-
-    btnViewIncident.setOnClickListener(v -> pushBtnViewIncent());
-
-    return root;
+    multiplePermissionLauncher.launch(new String[]{
+      Manifest.permission.CAMERA,
+      Manifest.permission.ACCESS_FINE_LOCATION
+    });
   }
 
+
+  /**
+   * Muestra el Spinner para seleccionar manualmente un tipo de incidencia cuando la predicción no tiene suficiente confianza.
+   *
+   * @param clases Array de strings con los tipos de incidencias.
+   */
+  private void spinner(String[] clases) {
+    spinnerIncidentType.setVisibility(View.VISIBLE);
+    spinnerIncidentType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+      boolean first = true;
+
+      @Override
+      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (first) {
+          first = false;
+          return;
+        }
+        String select = clases[position];
+        incidentPercentage = 100;
+        imageViewIncidentType.setText(select);
+      }
+
+      @Override
+      public void onNothingSelected(AdapterView<?> parent) {
+        // N/A
+      }
+    });
+  }
+
+  /**
+   * Maneja el evento de pulsar el botón de tomar foto. Solicita permiso si es necesario y abre la cámara.
+   */
   private void pushBtnTakePhoto() {
     if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-      != PackageManager.PERMISSION_GRANTED) {
-      requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
-    } else {
+      == PackageManager.PERMISSION_GRANTED) {
       openCamera();
+    } else {
+      Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
     }
   }
 
+  /**
+   * Navega hacia el fragmento de visualización de incidencias registradas.
+   */
   private void pushBtnViewIncent() {
     NavController navController = NavHostFragment.findNavController(HomeFragment.this);
     navController.navigate(R.id.nav_Incidents);
   }
 
+  /**
+   * Envía la información de la incidencia a Firestore si todos los campos requeridos están completos.
+   * También limpia la vista para el siguiente registro.
+   */
   private void pushBtnSendIncident() {
-    String tipoIncidencia = imageViewTipoIncidencia.getText().toString();
-    String localizacion = imageViewLocalizacion.getText().toString();
-    String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+    String localitation = imageViewLocalizacion.getText().toString();
+    String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
     String status = "Pendiente";
 
-    if (tipoIncidencia.isEmpty() || localizacion.isEmpty() || fecha.isEmpty() || currentPhotoPath == null || currentPhotoPath.isEmpty() || status.isEmpty()) {
-      Toast.makeText(getContext(), "Todos los campos deben ser completos", Toast.LENGTH_SHORT).show();
+    if (incidentType == null || incidentType.isEmpty() || localitation.isEmpty() || currentPhotoPath == null || currentPhotoPath.isEmpty()) {
+      Toast.makeText(getContext(), getString(R.string.gaps_empty), Toast.LENGTH_SHORT).show();
       return;
     }
-    saveIncidentToFirestore(tipoIncidencia, localizacion, currentPhotoPath, fecha, status);
 
-    imageViewTipoIncidencia.setText("");
+    uploadImageToFirebaseStorage(incidentType, localitation, date, status, incidentPercentage);
+
+    spinnerIncidentType.setVisibility(View.GONE);
+
+    imageViewIncidentType.setText("");
+    imageViewIncidentType.setGravity(Gravity.CENTER);
     imageViewLocalizacion.setText("");
     imageView.setImageResource(0);
     currentPhotoPath = null;
   }
 
+  /**
+   * Abre la cámara del dispositivo para tomar una fotografía y guarda temporalmente la imagen capturada.
+   */
   private void openCamera() {
     try {
       File photoFile = createImageFile();
@@ -179,7 +313,10 @@ public class HomeFragment extends Fragment {
     }
   }
 
-  private void obtenerUltimaUbicacion() {
+  /**
+   * Obtiene la última ubicación conocida del dispositivo y la muestra en la interfaz.
+   */
+  private void getLastLocation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
     if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -200,7 +337,15 @@ public class HomeFragment extends Fragment {
     }
   }
 
-  private void predecirTipoIncidencia(Bitmap bitmap) {
+  /**
+   * Predice el tipo de incidencia utilizando un modelo TensorFlow Lite y muestra el resultado con el porcentaje de confianza.
+   *
+   * @param bitmap Imagen capturada para analizar.
+   * @return Porcentaje de confianza de la predicción.
+   */
+  private int predictIncidentType(Bitmap bitmap) {
+    int confidencePercentage = 0;
+
     try {
       TFLiteModel tfliteModel = new TFLiteModel(getActivity().getAssets());
       Interpreter interpreter = tfliteModel.getInterpreter();
@@ -211,18 +356,32 @@ public class HomeFragment extends Fragment {
       float[][] output = new float[1][5];
       interpreter.run(input, output);
 
-      int clase = argMax(output[0]);
-      String[] clases = {"Grieta", "Bache leve", "Bache medio", "Bache grave", "Poste caído"};
-      String tipoIncidencia = clases[clase];
+      int type = argMax(output[0]);
+      float confidence = output[0][type];
+      confidencePercentage = (int) (confidence * 100);
 
-      imageViewTipoIncidencia.setText(tipoIncidencia);
+      String[] types = {"Grieta", "Bache leve", "Bache medio", "Bache grave", "Poste caído"};
+      incidentType = types[type];
+
+      String result = incidentType + " " + confidencePercentage + "%";
+      imageViewIncidentType.setText(result);
+
+      return confidencePercentage;
 
     } catch (Exception e) {
       e.printStackTrace();
-      imageViewTipoIncidencia.setText("Error al predecir");
+      imageViewIncidentType.setText(getString(R.string.prediction_error));
     }
+
+    return confidencePercentage;
   }
 
+  /**
+   * Preprocesa el bitmap para adaptarlo al formato requerido por el modelo TensorFlow Lite.
+   *
+   * @param bitmap Imagen escalada a 224x224 píxeles.
+   * @return Arreglo 4D con los valores normalizados del bitmap.
+   */
   private float[][][][] preprocessBitmap(Bitmap bitmap) {
     float[][][][] input = new float[1][224][224][3];
     for (int y = 0; y < 224; y++) {
@@ -236,6 +395,12 @@ public class HomeFragment extends Fragment {
     return input;
   }
 
+  /**
+   * Devuelve el índice del valor máximo dentro de un arreglo de floats.
+   *
+   * @param array Arreglo de floats.
+   * @return Índice del valor máximo.
+   */
   private int argMax(float[] array) {
     int maxIndex = 0;
     float max = array[0];
@@ -248,6 +413,12 @@ public class HomeFragment extends Fragment {
     return maxIndex;
   }
 
+  /**
+   * Crea un archivo temporal para almacenar una imagen capturada por la cámara.
+   *
+   * @return Archivo creado para la imagen.
+   * @throws IOException Si ocurre un error al crear el archivo.
+   */
   private File createImageFile() throws IOException {
     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     String imageFileName = "JPEG_" + timeStamp + "_";
@@ -266,20 +437,31 @@ public class HomeFragment extends Fragment {
     return image;
   }
 
-  private void saveIncidentToFirestore(String tipoIncidencia, String localizacion, String imageUrl, String fecha, String status) {
+  /**
+   * Guarda la información de una incidencia en Firestore, incluyendo usuario, tipo, localización, foto, fecha y estado.
+   *
+   * @param incidentType       Tipo de incidencia detectado o seleccionado.
+   * @param localitation       Coordenadas de la ubicación donde se detectó la incidencia.
+   * @param imageUrl           Ruta local de la imagen capturada.
+   * @param date               Fecha y hora del registro.
+   * @param status             Estado inicial de la incidencia.
+   * @param incidentPercentage Porcentaje de error (confianza) de la predicción automática.
+   */
+  private void saveIncidentToFirestore(String incidentType, String localitation, String imageUrl, String date, String status, int incidentPercentage) {
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     if (user != null) {
       FirebaseFirestore db = FirebaseFirestore.getInstance();
 
       Map<String, Object> incidentData = new HashMap<>();
-      incidentData.put("usuario_id", user.getUid());
-      incidentData.put("tipo_incidencia", tipoIncidencia);
-      incidentData.put("localizacion", localizacion);
-      incidentData.put("foto", imageUrl);
-      incidentData.put("fecha", fecha);
+      incidentData.put("user_id", user.getUid());
+      incidentData.put("incident_type", incidentType);
+      incidentData.put("localitation", localitation);
+      incidentData.put("photo", imageUrl);
+      incidentData.put("date", date);
       incidentData.put("status", status);
+      incidentData.put("error_percentage", incidentPercentage);
 
-      db.collection("incidencias")
+      db.collection("incidents")
         .add(incidentData)
         .addOnSuccessListener(documentReference -> {
           String incidentId = documentReference.getId();
@@ -288,15 +470,32 @@ public class HomeFragment extends Fragment {
 
           documentReference.update("uid", incidentId)
             .addOnSuccessListener(aVoid ->
-              Toast.makeText(getContext(), "Incidencia registrada correctamente con UID", Toast.LENGTH_SHORT).show()
+              Toast.makeText(getContext(), getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show()
             )
             .addOnFailureListener(e ->
-              Toast.makeText(getContext(), "Error al actualizar el UID en la incidencia", Toast.LENGTH_SHORT).show()
+              Toast.makeText(getContext(), getString(R.string.error_updating_UID_incident), Toast.LENGTH_SHORT).show()
             );
         })
         .addOnFailureListener(e ->
-          Toast.makeText(getContext(), "Error al registrar incidencia", Toast.LENGTH_SHORT).show()
+          Toast.makeText(getContext(), getString(R.string.incident_send_bad), Toast.LENGTH_SHORT).show()
         );
     }
+  }
+
+  private void uploadImageToFirebaseStorage(String incidentType, String localitation, String date, String status, int incidentPercentage) {
+    Uri fileUri = Uri.fromFile(new File(currentPhotoPath));
+    String fileName = "images/incidents/" + fileUri.getLastPathSegment();
+
+    StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
+    UploadTask uploadTask = storageRef.putFile(fileUri);
+
+    uploadTask.addOnSuccessListener(taskSnapshot ->
+      storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+        String imageUrl = uri.toString();
+        saveIncidentToFirestore(incidentType, localitation, imageUrl, date, status, incidentPercentage);
+      })
+    ).addOnFailureListener(e ->
+      Toast.makeText(getContext(), getString(R.string.error_upload_photo), Toast.LENGTH_SHORT).show()
+    );
   }
 }

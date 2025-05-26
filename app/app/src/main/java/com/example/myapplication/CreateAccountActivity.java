@@ -26,7 +26,8 @@ import java.util.Map;
 
 public class CreateAccountActivity extends AppCompatActivity {
 
-
+  private static final String HTML_RED_BOLD_OPEN = "<font color='#FF0000'><b>";
+  private static final String HTML_BOLD_CLOSE = "</b></font>";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +39,10 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     Button buttonCreateAcount = findViewById(R.id.btnCreateAccount);
 
-    buttonCreateAcount.setOnClickListener(v -> pushCreateAcount(mAuth,db));
+    buttonCreateAcount.setOnClickListener(v -> pushCreateAcount(mAuth, db));
   }
 
-  public void pushCreateAcount( FirebaseAuth mAuth, FirebaseFirestore db) {
+  public void pushCreateAcount(FirebaseAuth mAuth, FirebaseFirestore db) {
 
     EditText editTextUsr = findViewById(R.id.editTextUsrNombre);
     EditText editTextEmail = findViewById(R.id.editTextEmail);
@@ -55,14 +56,14 @@ public class CreateAccountActivity extends AppCompatActivity {
     String confirmPassword = confirmPasswordField.getText().toString();
 
     if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
-      Toast.makeText(this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.gaps_empty) + "</b></font>",Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
+      Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.gaps_empty) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
     } else if (!password.equals(confirmPassword)) {
-      Toast.makeText(this, Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.passwd_dont_match) + "</b></font>",Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
+      Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.passwd_dont_match) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
     } else if (!checkBox.isChecked()) {
       AlertDialog.Builder builder = new AlertDialog.Builder(this);
-      builder.setTitle(Html.fromHtml("<font color='#FF0000'>" + getString(R.string.error) + "</font>",Html.FROM_HTML_MODE_LEGACY));
+      builder.setTitle(Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.error) + "</font>", Html.FROM_HTML_MODE_LEGACY));
       builder.setMessage(getString(R.string.accept_conditions));
-      builder.setPositiveButton(Html.fromHtml("<font color='#6750A4'>" + getString(R.string.acept) + "</font>",Html.FROM_HTML_MODE_LEGACY), null);
+      builder.setPositiveButton(Html.fromHtml("<font color='#6750A4'>" + getString(R.string.acept) + "</font>", Html.FROM_HTML_MODE_LEGACY), null);
       builder.show();
     } else {
       mAuth.createUserWithEmailAndPassword(email, password)
@@ -70,23 +71,22 @@ public class CreateAccountActivity extends AppCompatActivity {
           if (task.isSuccessful()) {
             String uid = mAuth.getCurrentUser().getUid();
 
-
             Map<String, Object> user = new HashMap<>();
-            user.put("nombre", userName);
+            user.put("name", userName);
             user.put("email", email);
             user.put("lastLogin", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
             user.put("avatar", "");
 
             db.collection("users").document(uid).set(user).addOnSuccessListener(aVoid -> {
-                Toast.makeText(this, "Cuenta creada correctamente", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, LoginActivity.class));
-                finish();
-              }).addOnFailureListener(e ->
-              Toast.makeText(this, "Error al guardar usuario en Firestore", Toast.LENGTH_SHORT).show()
+              Toast.makeText(this, getString(R.string.acount_create_well), Toast.LENGTH_SHORT).show();
+              startActivity(new Intent(this, LoginActivity.class));
+              finish();
+            }).addOnFailureListener(e ->
+              Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.error_saving_user) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show()
             );
 
           } else {
-            Toast.makeText(this, "Error al crear cuenta: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.error_create_Acount) + task.getException().getMessage() + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
           }
         });
     }

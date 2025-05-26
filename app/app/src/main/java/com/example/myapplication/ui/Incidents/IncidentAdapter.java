@@ -19,17 +19,35 @@ import com.example.myapplication.R;
 
 import java.util.List;
 
+/**
+ * Adaptador personalizado para mostrar una lista de incidentes en un RecyclerView.
+ * Permite visualizar el tipo y estado del incidente, y proporciona un botón para ver detalles.
+ */
 public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.IncidentViewHolder> {
   private Context context;
-  private List<Incident> listaIncidencias;
+  private List<Incident> incidentList;
   private NavController navController;
 
-
-  public IncidentAdapter(Context context, List<Incident> listaIncidencias, NavController navController) {
+  /**
+   * Constructor para el adaptador de incidentes.
+   *
+   * @param context       El contexto de la actividad o fragmento.
+   * @param incidentList  Lista de objetos {@link Incident} que se mostrarán.
+   * @param navController Controlador de navegación para gestionar las transiciones entre fragmentos.
+   */
+  public IncidentAdapter(Context context, List<Incident> incidentList, NavController navController) {
     this.context = context;
-    this.listaIncidencias = listaIncidencias;
+    this.incidentList = incidentList;
     this.navController = navController;
   }
+
+  /**
+   * Crea nuevas vistas (invocado por el layout manager).
+   *
+   * @param parent   El ViewGroup en el que se añadirá la nueva vista.
+   * @param viewType Tipo de vista del nuevo ítem.
+   * @return Una nueva instancia de {@link IncidentViewHolder}.
+   */
 
   @Override
   public IncidentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -37,55 +55,78 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
     return new IncidentViewHolder(view);
   }
 
+  /**
+   * Reemplaza el contenido de una vista (invocado por el layout manager).
+   *
+   * @param holder   ViewHolder que debe ser actualizado.
+   * @param position Posición del elemento dentro del conjunto de datos.
+   */
   @Override
   public void onBindViewHolder(IncidentViewHolder holder, int position) {
 
-    Incident incidencia = listaIncidencias.get(position);
+    Incident incident = incidentList.get(position);
+    holder.txtTypeIncident.setText(String.valueOf(incident.getIncidentType()));
 
-    holder.txtTypeIncident.setText(String.valueOf(incidencia.getTipoIncidencia()));
-    holder.btnView.setOnClickListener(v -> pushBtnViewIncient(incidencia));
-    String estado = incidencia.getStatus().toLowerCase();
+    holder.btnView.setOnClickListener(v -> pushBtnViewIncient(incident));
+    String state = incident.getStatus().toLowerCase();
 
-    switch (estado) {
+    switch (state) {
       case "pendiente":
-        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setText(incident.getStatus());
         holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.red));
         break;
       case "en proceso":
-        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setText(incident.getStatus());
         holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.yellow));
         break;
       case "resuelta":
-        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setText(incident.getStatus());
         holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.green));
         break;
       default:
-        holder.txtStatus.setText(incidencia.getStatus());
+        holder.txtStatus.setText(incident.getStatus());
         break;
     }
 
 
   }
 
-  private void pushBtnViewIncient(Incident incidencia){
+  /**
+   * Navega a la vista de detalle del incidente seleccionado.
+   *
+   * @param incident Incidente que se desea visualizar.
+   */
+  private void pushBtnViewIncient(Incident incident) {
     Bundle bundle = new Bundle();
-    bundle.putString("incident_id", incidencia.getUid());
-    Log.e("FIREBASE", "id_incdent enviada: "+incidencia.getUid());
-
+    bundle.putString("incident_id", incident.getUid());
 
     navController.navigate(R.id.nav_checkIncident, bundle);
   }
 
+  /**
+   * Devuelve el número total de elementos en la lista.
+   *
+   * @return Cantidad de incidentes en la lista.
+   */
   @Override
   public int getItemCount() {
-    return listaIncidencias.size();
+    return incidentList.size();
   }
 
+  /**
+   * Clase interna que representa el ViewHolder para un incidente.
+   * Contiene referencias a los elementos visuales del ítem.
+   */
   public static class IncidentViewHolder extends RecyclerView.ViewHolder {
     TextView txtTypeIncident;
     TextView txtStatus;
-    Button  btnView;
+    Button btnView;
 
+    /**
+     * Constructor del ViewHolder que inicializa las vistas del ítem.
+     *
+     * @param itemView Vista correspondiente al ítem de la lista.
+     */
     public IncidentViewHolder(View itemView) {
       super(itemView);
       txtTypeIncident = itemView.findViewById(R.id.txtTypeIncident);

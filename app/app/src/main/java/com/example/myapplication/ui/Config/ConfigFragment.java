@@ -1,8 +1,6 @@
 package com.example.myapplication.ui.config;
 
 
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -21,7 +18,7 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
-import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,33 +40,54 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class ConfigFragment extends Fragment {
 
-  private static final int REQUEST_IMAGE_CAPTURE = 1;
-  private static final int REQUEST_PICK_IMAGE = 100;
   private Switch switchDarkMode;
   private Switch switchNotification;
   private Spinner spinnerLenguage;
-  private Button btnChangeEmail;
-  private Button btnChangePasword;
-  private Button btnChangeAvatar;
-  private Button btnDeleteAcount;
-  private Button btnLogOut;
-  private Uri photoUri;
   private ImageView imgviewAvatar;
-  private Bitmap currentBitmap;
-  private Uri selectedImageUri = null;
-  private String currentPhotoPath = null;
+  private AlertDialog dialog;
 
+  /**
+   * Ruta del archivo de la imagen capturada
+   */
+  private String currentPhotoPath;
 
+  /**
+   * Lanzador para tomar una foto
+   */
+  private ActivityResultLauncher<Uri> takePictureLauncher;
 
+  /**
+   * Lanzador para pedir permiso de la cámara
+   */
+  private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+  private ActivityResultLauncher<String> pickImageLauncher;
+  private boolean userIsInteracting = false;
+
+  /**
+   * Inicializa el fragmento y configura los elementos de la interfaz,
+   * así como los listeners para los botones y componentes interactivos.
+   *
+   * @param inflater           Inflater para crear la vista.
+   * @param container          Contenedor padre de la vista.
+   * @param savedInstanceState Estado previo guardado del fragmento.
+   * @return La vista creada para el fragmento.
+   */
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
@@ -79,12 +97,32 @@ public class ConfigFragment extends Fragment {
     switchDarkMode = root.findViewById(R.id.switchDarkMode);
     switchNotification = root.findViewById(R.id.switchNotifications);
     spinnerLenguage = root.findViewById(R.id.spinnerLanguage);
-    btnChangeEmail = root.findViewById(R.id.btnChangeEmail);
-    btnChangePasword = root.findViewById(R.id.btnChangePassword);
-    btnChangeAvatar = root.findViewById(R.id.btnChangeAvatar);
-    btnDeleteAcount = root.findViewById(R.id.btnDeleteAccount);
-    btnLogOut = root.findViewById(R.id.btnLogout);
+    Button btnChangeEmail = root.findViewById(R.id.btnChangeEmail);
+    Button btnChangePasword = root.findViewById(R.id.btnChangePassword);
+    Button btnChangeAvatar = root.findViewById(R.id.btnChangeAvatar);
+    Button btnDeleteAcount = root.findViewById(R.id.btnDeleteAccount);
+    Button btnLogOut = root.findViewById(R.id.btnLogout);
 
+    setupActivityLauncher();
+    setupSpinner();
+    setupDarkModeSwitch();
+    setUpNotificationModeSwitch();
+
+    btnChangeEmail.setOnClickListener(v -> showChangeEmailDialog());
+    btnChangePasword.setOnClickListener(v -> showChangePasswordDialog());
+    btnChangeAvatar.setOnClickListener(v -> showChangeAvatar());
+    btnDeleteAcount.setOnClickListener(v -> showDeleteAccountDialog());
+    btnLogOut.setOnClickListener(v -> logout());
+
+    return root;
+  }
+
+  /**
+   * Configura el adaptador y comportamiento del spinner de selección de idioma.
+   * Asigna el idioma actual y define la acción al cambiar la selección.
+   */
+
+  private void setupSpinner() {
     ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
       getContext(),
       R.array.languages_array,
@@ -102,38 +140,42 @@ public class ConfigFragment extends Fragment {
       spinnerLenguage.setSelection(1);
     }
 
-
-    setupspinner();
-    setupDarkModeSwitch();
-    setUpLenguageModeSwitch();
-
-    btnChangeEmail.setOnClickListener(v -> showChangeEmailDialog());
-    btnChangePasword.setOnClickListener(v -> showChangePasswordDialog());
-    btnChangeAvatar.setOnClickListener(v -> showChangeAvatar());
-    btnDeleteAcount.setOnClickListener(v -> showDeleteAccountDialog());
-    btnLogOut.setOnClickListener(v -> logout());
-    return root;
-  }
-
-  private void setupspinner() {
     spinnerLenguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (!userIsInteracting) return;
+
         String language = parent.getItemAtPosition(position).toString();
-        if (language.equals(R.string.spanish)) {
+        String langCode;
+
+        if (language.equals("Español")) {
+          langCode = "es";
           Toast.makeText(getContext(), getString(R.string.configuration_lenguage_spanish), Toast.LENGTH_SHORT).show();
-        } else if (language.equals(getString(R.string.english)) || language.equals(R.string.english)) {
-          Toast.makeText(getContext(), R.string.configuration_lenguage_english, Toast.LENGTH_SHORT).show();
+        } else if (language.equals("English")) {
+          langCode = "en";
+          Toast.makeText(getContext(), getString(R.string.configuration_lenguage_english), Toast.LENGTH_SHORT).show();
+        } else {
+          return;
         }
+
+        SharedPreferences prefs = requireActivity().getSharedPreferences("settings", Context.MODE_PRIVATE);
+        prefs.edit().putString("lang", langCode).apply();
+
+        requireActivity().recreate();
       }
 
       @Override
       public void onNothingSelected(AdapterView<?> parent) {
-        // Noncompliant - method is empty
       }
+      //NA/A
     });
   }
 
+
+  /**
+   * Configura el interruptor para activar o desactivar el modo oscuro,
+   * aplicando el tema correspondiente y mostrando mensajes.
+   */
   private void setupDarkModeSwitch() {
     int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     switchDarkMode.setChecked(currentNightMode == Configuration.UI_MODE_NIGHT_YES);
@@ -149,7 +191,11 @@ public class ConfigFragment extends Fragment {
     });
   }
 
-  private void setUpLenguageModeSwitch() {
+  /**
+   * Configura el interruptor para activar o desactivar las notificaciones,
+   * mostrando mensajes acorde al estado.
+   */
+  private void setUpNotificationModeSwitch() {
     switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
       if (isChecked) {
         Toast.makeText(getContext(), getString(R.string.notification_activated), Toast.LENGTH_SHORT).show();
@@ -159,6 +205,10 @@ public class ConfigFragment extends Fragment {
     });
   }
 
+  /**
+   * Muestra un diálogo personalizado para que el usuario pueda cambiar su correo electrónico.
+   * Incluye validaciones básicas y la acción para cambiar el correo.
+   */
   private void showChangeEmailDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog);
     builder.setTitle(getString(R.string.change_email));
@@ -171,12 +221,20 @@ public class ConfigFragment extends Fragment {
     EditText edtConfirmNewEmail = view.findViewById(R.id.edtConfirmNewEmail);
     EditText edtPassword = view.findViewById(R.id.edtPassword);
 
-    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {
-      pushBtnChangeEmail(edtCurrentEmail, edtNewEmail, edtConfirmNewEmail, edtPassword);
-    });
+    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> pushBtnChangeEmail(edtCurrentEmail, edtNewEmail, edtConfirmNewEmail, edtPassword));
     builder.setNegativeButton(getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
     builder.create().show();
   }
+
+  /**
+   * Gestiona la lógica para cambiar el correo electrónico del usuario,
+   * realizando validaciones y autenticación antes de actualizar.
+   *
+   * @param edtCurrentEmail    Campo con el correo actual.
+   * @param edtNewEmail        Campo con el nuevo correo.
+   * @param edtConfirmNewEmail Campo para confirmar el nuevo correo.
+   * @param edtPassword        Campo para la contraseña actual.
+   */
   private void pushBtnChangeEmail(EditText edtCurrentEmail, EditText edtNewEmail, EditText edtConfirmNewEmail, EditText edtPassword) {
     String currentEmail = edtCurrentEmail.getText().toString().trim();
     String newEmail = edtNewEmail.getText().toString().trim();
@@ -195,10 +253,6 @@ public class ConfigFragment extends Fragment {
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    if (user == null || user.getEmail() == null) {
-      Toast.makeText(getContext(), "Usuario no autenticado", Toast.LENGTH_SHORT).show();
-      return;
-    }
 
     if (!user.getEmail().equals(currentEmail)) {
       Toast.makeText(getContext(), getString(R.string.toast_current_email_not_match), Toast.LENGTH_SHORT).show();
@@ -213,19 +267,20 @@ public class ConfigFragment extends Fragment {
           if (updateTask.isSuccessful()) {
             Toast.makeText(getContext(), "Verifica el nuevo correo para completar el cambio, Se te habrá enviado un correo al nuevo correo electronico", Toast.LENGTH_LONG).show();
           } else {
-            Log.d("FIREBASE", "Email update failed: " + updateTask.getException());
             Toast.makeText(getContext(), "Error al enviar verificación", Toast.LENGTH_SHORT).show();
           }
         });
       } else {
-        Log.d("FIREBASE", "Reauthentication failed: " + task.getException());
         Toast.makeText(getContext(), "Reautenticación fallida", Toast.LENGTH_SHORT).show();
       }
     });
 
   }
 
-
+  /**
+   * Muestra un diálogo personalizado para que el usuario pueda cambiar su contraseña.
+   * Incluye los campos necesarios y botones para confirmar o cancelar.
+   */
   private void showChangePasswordDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog);
     builder.setTitle(getString(R.string.change_password));
@@ -238,16 +293,23 @@ public class ConfigFragment extends Fragment {
     EditText edtNewPassword = view.findViewById(R.id.edtNewPassword);
     EditText edtConfirmNewPassword = view.findViewById(R.id.edtConfirmNewPassword);
 
-    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {
-      pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword);
-    });
-
+    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword));
     builder.setNegativeButton(getString(R.string.button_cancel), null);
 
     AlertDialog dialog = builder.create();
     dialog.setCancelable(false);
     dialog.show();
   }
+
+  /**
+   * Gestiona la lógica para cambiar la contraseña del usuario,
+   * realizando validaciones y autenticación antes de actualizar.
+   *
+   * @param edtEmail              Campo con el correo electrónico.
+   * @param edtCurrentPassword    Campo con la contraseña actual.
+   * @param edtNewPassword        Campo con la nueva contraseña.
+   * @param edtConfirmNewPassword Campo para confirmar la nueva contraseña.
+   */
   private void pushBtnChangePassword(EditText edtEmail, EditText edtCurrentPassword, EditText edtNewPassword, EditText edtConfirmNewPassword) {
     String email = edtEmail.getText().toString().trim();
     String currentPassword = edtCurrentPassword.getText().toString().trim();
@@ -285,18 +347,22 @@ public class ConfigFragment extends Fragment {
     }
   }
 
-
+  /**
+   * Muestra un diálogo de confirmación para que el usuario pueda eliminar su cuenta.
+   */
   private void showDeleteAccountDialog() {
     new AlertDialog.Builder(requireContext())
       .setTitle(getString(R.string.dialog_delete_account_title))
       .setMessage(getString(R.string.dialog_delete_account_message))
-      .setPositiveButton(getString(R.string.dialog_delete_account_yes), (dialog, which) -> {
-        pushBtnDeleteAccount();
-      })
+      .setPositiveButton(getString(R.string.dialog_delete_account_yes), (dialog, which) -> pushBtnDeleteAccount())
       .setNegativeButton(getString(R.string.dialog_delete_account_no), null)
       .show();
   }
 
+  /**
+   * Gestiona la eliminación de la cuenta del usuario actual,
+   * borrando primero su documento en Firestore y luego la cuenta de autenticación.
+   */
   private void pushBtnDeleteAccount() {
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -304,7 +370,7 @@ public class ConfigFragment extends Fragment {
       FirebaseFirestore db = FirebaseFirestore.getInstance();
       db.collection("users").document(user.getUid())
         .delete()
-        .addOnSuccessListener(aVoid -> {
+        .addOnSuccessListener(aVoid ->
           user.delete()
             .addOnCompleteListener(task -> {
               if (task.isSuccessful()) {
@@ -317,94 +383,110 @@ public class ConfigFragment extends Fragment {
               } else {
                 Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show();
               }
-            });
-        })
-        .addOnFailureListener(e -> {
-          Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show();
-        });
+            })
+        )
+        .addOnFailureListener(e -> Toast.makeText(getContext(), getString(R.string.toast_account_delete_failed), Toast.LENGTH_SHORT).show());
     }
   }
 
+  /**
+   * Muestra un diálogo personalizado para que el usuario pueda cambiar su avatar,
+   * con opciones para seleccionar una imagen desde la galería o tomar una foto.
+   */
   private void showChangeAvatar() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog);
     builder.setTitle("Cambiar Avatar");
 
     View view = getLayoutInflater().inflate(R.layout.dialog_change_avatar, null);
-    builder.setView(view);
-
     imgviewAvatar = view.findViewById(R.id.imageviewAvatar);
-    ImageButton btnGalery = view.findViewById(R.id.btnGallery);
-    ImageButton btnCamera = view.findViewById(R.id.btnCamera);
+    Button btnGalery = view.findViewById(R.id.btnGallery);
+    Button btnCamera = view.findViewById(R.id.btnCamera);
 
     btnGalery.setOnClickListener(v -> pickImageFromGallery());
     btnCamera.setOnClickListener(v -> openCamera());
 
-
-    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> {btnChangeAvatar(); });
+    builder.setPositiveButton(getString(R.string.change), (dialog, which) -> btnChangeAvatar());
     builder.setNegativeButton(getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
-    builder.create().show();
+
+    dialog = builder.create();
+    dialog.setView(view);
+    dialog.show();
   }
 
-  private void btnChangeAvatar(){
+  /**
+   * Actualiza la imagen de avatar del usuario en Firestore usando la ruta
+   * actual almacenada en `currentPhotoPath`.
+   */
+  private void btnChangeAvatar() {
+    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    Uri fileUri = Uri.fromFile(new File(currentPhotoPath));
+    String fileName = "images/avatar/" + fileUri.getLastPathSegment();
+
+    StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
+    UploadTask uploadTask = storageRef.putFile(fileUri);
+
+    uploadTask.addOnSuccessListener(taskSnapshot ->
+      storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+        String imageUrl = uri.toString();
+        Map<String, Object> update = new HashMap<>();
+        update.put("avatar", imageUrl);
+
+        db.collection("users").document(uid)
+          .update(update)
+          .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Avatar actualizado", Toast.LENGTH_SHORT).show());
+
+
+      })
+    ).addOnFailureListener(e ->
+      Toast.makeText(getContext(), getString(R.string.error_upload_photo), Toast.LENGTH_SHORT).show()
+    );
+
 
   }
+
+
+  /**
+   * Lanza el selector de imágenes para que el usuario elija una imagen desde la galería.
+   */
   private void pickImageFromGallery() {
-    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-    intent.setType("image/*");
-    pickImageLauncher.launch(intent);
+    pickImageLauncher.launch("image/*");
   }
-  private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-    galery(result);
-  });
-  private void galery(ActivityResult result) {
-    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-      Uri imageUri = result.getData().getData();
-      if (imageUri != null) {
-        imgviewAvatar.setImageURI(imageUri);
-        selectedImageUri = imageUri;
-      }
-    }
-  }
-  private final ActivityResultLauncher<Intent> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-    photo(result);
-  });
-  private void photo(ActivityResult result) {
-    if (result.getResultCode() == Activity.RESULT_OK) {
-      Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
-      if (bitmap != null) {
-        imgviewAvatar.setImageBitmap(bitmap);
-        selectedImageUri = photoUri;
-      } else {
-        Toast.makeText(getContext(), "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show();
-      }
-    }
-  }
+
+  /**
+   * Abre la cámara del dispositivo para tomar una fotografía y guarda temporalmente la imagen capturada.
+   */
   private void openCamera() {
-    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
-      File photoFile;
-      try {
-        photoFile = createImageFile();
-      } catch (IOException ex) {
-        Toast.makeText(getContext(), "Error al crear archivo de imagen", Toast.LENGTH_SHORT).show();
-        return;
-      }
+    try {
+      File photoFile = createImageFile();
       if (photoFile != null) {
-        photoUri = FileProvider.getUriForFile(
-          getContext(),
+        Uri photoURI = FileProvider.getUriForFile(
+          requireContext(),
           "com.example.myapplication.fileprovider",
           photoFile
         );
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-        takePhotoLauncher.launch(intent); // <--- nuevo launcher
+        currentPhotoPath = photoFile.getAbsolutePath();
+        takePictureLauncher.launch(photoURI);
       }
+    } catch (IOException ex) {
+      Toast.makeText(getContext(),
+        Html.fromHtml("<font color='#FF0000'><b>" + getString(R.string.error_creating_image) + "</b></font>", Html.FROM_HTML_MODE_LEGACY),
+        Toast.LENGTH_SHORT).show();
     }
   }
+
+  /**
+   * Crea un archivo temporal para almacenar una imagen capturada por la cámara.
+   *
+   * @return Archivo creado para la imagen.
+   * @throws IOException Si ocurre un error al crear el archivo.
+   */
   private File createImageFile() throws IOException {
     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     String imageFileName = "JPEG_" + timeStamp + "_";
 
-    File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
     if (storageDir != null && !storageDir.exists()) {
       storageDir.mkdirs();
     }
@@ -415,9 +497,83 @@ public class ConfigFragment extends Fragment {
     );
 
     currentPhotoPath = image.getAbsolutePath();
-    Log.d("RutaImagen", "Ruta de la imagen: " + currentPhotoPath);
     return image;
   }
+
+  /**
+   * Inicializa los lanzadores de actividades para tomar fotos, pedir permisos
+   * y seleccionar imágenes de la galería, configurando sus callbacks.
+   */
+  private void setupActivityLauncher() {
+    takePictureLauncher = registerForActivityResult(
+      new ActivityResultContracts.TakePicture(),
+      result -> {
+        if (Boolean.TRUE.equals(result)) {
+          Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+          if (bitmap != null) {
+            imgviewAvatar.setImageBitmap(bitmap);
+          }
+        }
+      }
+    );
+
+    requestCameraPermissionLauncher = registerForActivityResult(
+      new ActivityResultContracts.RequestPermission(),
+      isGranted -> {
+        if (Boolean.TRUE.equals(isGranted)) {
+          openCamera();
+        } else {
+          Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
+        }
+      }
+    );
+
+    pickImageLauncher = registerForActivityResult(
+      new ActivityResultContracts.GetContent(),
+      uri -> {
+        if (uri != null) {
+          imgviewAvatar.setImageURI(uri);
+          File localfile = copyContentUriToLocal(uri);
+          if (localfile != null) {
+            currentPhotoPath = localfile.getAbsolutePath();
+          }
+        }
+      }
+    );
+  }
+
+
+
+  /**
+   * Copia el contenido apuntado por un {@link Uri} a un archivo local en el almacenamiento
+   * privado de la aplicación y devuelve dicho archivo.
+   *
+   * @param uri El {@link Uri} de la fuente de datos a copiar.
+   * @return Un {@link File} que representa el archivo local creado con el contenido copiado,
+   * o {@code null} si ocurre algún error durante la operación.
+   */
+  private File copyContentUriToLocal(Uri uri) {
+    File localFile = new File(requireContext().getFilesDir(), "avatar.jpg");
+    try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
+         FileOutputStream outputStream = new FileOutputStream(localFile)) {
+
+      byte[] buffer = new byte[4096];
+      int bytesRead;
+      while ((bytesRead = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, bytesRead);
+      }
+      outputStream.flush();
+      return localFile;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  /**
+   * Cierra la sesión del usuario actual y redirige a la pantalla de login.
+   */
   private void logout() {
     FirebaseAuth.getInstance().signOut();
 

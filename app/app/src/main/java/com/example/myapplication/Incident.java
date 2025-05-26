@@ -4,82 +4,62 @@ import com.google.firebase.firestore.PropertyName;
 
 public class Incident {
   private String uid;
-  private String tipoIncidencia;
-  private String localizacion;
-  private String foto;
-  private String fecha;
+  private String incidentType;
+  private String localitation;
+  private String photo;
+  private String date;
   private String status;
-  private String usuarioId;
+  private String userID;
 
-  public Incident() {
+  public Incident() {}
 
-  }
-
-  public Incident(String uid, String tipoIncidencia, String localizacion, String foto, String fecha, String status, String usuarioId) {
+  public Incident(String uid, String incidentType, String localitation, String photo, String date, String status, String userID) {
     this.uid = uid;
-    this.tipoIncidencia = tipoIncidencia;
-    this.localizacion = localizacion;
-    this.foto = foto;
-    this.fecha = fecha;
+    this.incidentType = incidentType;
+    this.localitation = localitation;
+    this.photo = photo;
+    this.date = date;
     this.status = status;
-    this.usuarioId = usuarioId;
+    this.userID = userID;
   }
 
   public String getUid() {
     return uid;
   }
 
-  public void setUid(String uid) {
-    this.uid = uid;
+  @PropertyName("incident_type")
+  public String getIncidentType() {
+    return incidentType;
   }
 
-  @PropertyName("tipo_incidencia")
-  public String getTipoIncidencia() {
-    return tipoIncidencia;
+  @PropertyName("incident_type")
+  public void setIncidentType(String incidentType) {
+    this.incidentType = incidentType;
   }
 
-  @PropertyName("tipo_incidencia")
-  public void setTipoIncidencia(String tipoIncidencia) {
-    this.tipoIncidencia = tipoIncidencia;
+  public String getLocalitation() {
+    return localitation;
   }
 
-  public String getLocalizacion() {
-    return localizacion;
+  public String getPhoto() {
+    return photo;
   }
 
-  public void setLocalizacion(String localizacion) {
-    this.localizacion = localizacion;
-  }
-
-  public String getFoto() {
-    return foto;
-  }
-
-  public void setFoto(String foto) {
-    this.foto = foto;
-  }
-
-  public String getFecha() {
-    return fecha;
-  }
-
-  public void setFecha(String fecha) {
-    this.fecha = fecha;
+  public String getDate() {
+    return date;
   }
 
   public String getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
-    this.status = status;
+  @PropertyName("user_id")
+  public String getUserId() {
+    return userID;
   }
 
-  public String getUsuarioId() {
-    return usuarioId;
-  }
-
-  public void setUsuarioId(String usuarioId) {
-    this.usuarioId = usuarioId;
+  @PropertyName("user_id")
+  public void setUserId(String userID) {
+    this.userID = userID;
   }
 }

@@ -4,7 +4,6 @@ public class Usuario {
   private String nombre;
   private String password;
   private String email;
-
   private int id;
   private String pathAvatar;
 

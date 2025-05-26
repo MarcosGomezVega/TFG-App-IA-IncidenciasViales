@@ -19,12 +19,34 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
+/**
+ * Fragmento encargado de mostrar la lista de incidencias del usuario actualmente autenticado.
+ * Carga las incidencias desde Firestore filtradas por usuario, las ordena por fecha descendente
+ * y las muestra en un RecyclerView.
+ */
 public class IncidentsFragment extends Fragment {
 
+  /**
+   * Método llamado para crear la vista del fragmento.
+   * Infla el layout, configura el RecyclerView y obtiene las incidencias desde Firestore.
+   * Una vez obtenidas, ordena las incidencias por fecha descendente (más recientes primero)
+   * y las muestra usando un adaptador.
+   *
+   * @param inflater           Inflater para inflar el layout del fragmento
+   * @param container          Contenedor padre de la vista
+   * @param savedInstanceState Estado previo guardado
+   * @return La vista raíz inflada del fragmento
+   */
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
@@ -37,31 +59,48 @@ public class IncidentsFragment extends Fragment {
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     if (user != null) {
       FirebaseFirestore db = FirebaseFirestore.getInstance();
-      db.collection("incidencias")
-              .whereEqualTo("usuario_id", user.getUid())
-              .get()
-              .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                  QuerySnapshot querySnapshot = task.getResult();
-                  if (querySnapshot != null) {
-                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      db.collection("incidents")
+        .whereEqualTo("user_id", user.getUid())
+        .get()
+        .addOnCompleteListener(task -> {
+          if (task.isSuccessful()) {
+            QuerySnapshot querySnapshot = task.getResult();
+            if (querySnapshot != null) {
+              for (DocumentSnapshot document : querySnapshot.getDocuments()) {
 
-                      Incident incident = document.toObject(Incident.class);
-                      incidents.add(incident);
-                    }
-                    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-                    recyclerViewIncidencia.setLayoutManager(layoutManager);
+                Incident incident = document.toObject(Incident.class);
+                incidents.add(incident);
+              }
+              shortIncidents(incidents);
+              LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+              recyclerViewIncidencia.setLayoutManager(layoutManager);
 
-                    NavController navController = NavHostFragment.findNavController(this);
-                    IncidentAdapter incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
-                    recyclerViewIncidencia.setAdapter(incidentAdapter);
-                  }
-                } else {
-                  Toast.makeText(getContext(), "Error al cargar las incidencias", Toast.LENGTH_SHORT).show();
-                }
-              });
+              NavController navController = NavHostFragment.findNavController(this);
+              IncidentAdapter incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
+              recyclerViewIncidencia.setAdapter(incidentAdapter);
+            }
+          }
+        });
     }
-
     return root;
+  }
+  /**
+   * Ordena la lista de incidencias en memoria por la fecha en orden descendente (más reciente primero).
+   * La fecha se interpreta a partir de un String con formato "yyyy-MM-dd HH:mm:ss".
+   *
+   * @param incidents Lista de incidencias a ordenar
+   */
+  private void shortIncidents( ArrayList<Incident> incidents){
+    Collections.sort(incidents, (i1, i2) -> {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+      try {
+        Date d1 = sdf.parse(i1.getDate());
+        Date d2 = sdf.parse(i2.getDate());
+        return d2.compareTo(d1);
+      } catch (ParseException e) {
+        e.printStackTrace();
+        return 0;
+      }
+    });
   }
 }
