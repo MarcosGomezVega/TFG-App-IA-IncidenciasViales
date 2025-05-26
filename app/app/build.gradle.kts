@@ -51,13 +51,15 @@ dependencies {
   testImplementation("junit:junit:4.13.2")
   androidTestImplementation("androidx.test.ext:junit:1.2.1")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+  androidTestImplementation("androidx.test:rules:1.5.0")
 
   implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
   implementation("com.google.firebase:firebase-analytics")
   implementation("com.google.firebase:firebase-auth")
-  implementation("com.google.android.gms:play-services-auth:21.0.0")
+  implementation("com.google.android.gms:play-services-auth")
   implementation("com.google.firebase:firebase-firestore:24.10.3")
   implementation("com.google.firebase:firebase-storage:20.2.1")
+  implementation("androidx.activity:activity-ktx:1.9.0")
 
   implementation("org.tensorflow:tensorflow-lite:2.13.0")
   implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
