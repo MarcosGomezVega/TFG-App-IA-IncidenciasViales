@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -36,6 +38,13 @@ import java.util.Locale;
  */
 public class IncidentsFragment extends Fragment {
 
+  private ArrayList<Incident> incidents = new ArrayList<>();
+  private IncidentAdapter incidentAdapter;
+  private boolean sortAscType = true;
+  private boolean sortAscStatus = true;
+  private Button btnStatus;
+  private Button btnTypeIncident;
+
   /**
    * Método llamado para crear la vista del fragmento.
    * Infla el layout, configura el RecyclerView y obtiene las incidencias desde Firestore.
@@ -54,7 +63,12 @@ public class IncidentsFragment extends Fragment {
     View root = inflater.inflate(R.layout.fragment_incidents, container, false);
 
     RecyclerView recyclerViewIncidencia = root.findViewById(R.id.recyclerViewIncidencias);
-    ArrayList<Incident> incidents = new ArrayList<>();
+
+    btnTypeIncident = root.findViewById(R.id.btnTypeIncident);
+    btnStatus = root.findViewById(R.id.btnstatus);
+
+    btnTypeIncident.setOnClickListener(v -> sortByType());
+    btnStatus.setOnClickListener(v -> sortByStatus());
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     if (user != null) {
@@ -66,8 +80,10 @@ public class IncidentsFragment extends Fragment {
           if (task.isSuccessful()) {
             QuerySnapshot querySnapshot = task.getResult();
             if (querySnapshot != null) {
-              for (DocumentSnapshot document : querySnapshot.getDocuments()) {
 
+              incidents.clear();
+
+              for (DocumentSnapshot document : querySnapshot.getDocuments()) {
                 Incident incident = document.toObject(Incident.class);
                 incidents.add(incident);
               }
@@ -76,7 +92,7 @@ public class IncidentsFragment extends Fragment {
               recyclerViewIncidencia.setLayoutManager(layoutManager);
 
               NavController navController = NavHostFragment.findNavController(this);
-              IncidentAdapter incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
+              incidentAdapter = new IncidentAdapter(getContext(), incidents, navController);
               recyclerViewIncidencia.setAdapter(incidentAdapter);
             }
           }
@@ -103,4 +119,34 @@ public class IncidentsFragment extends Fragment {
       }
     });
   }
+  private void sortByType() {
+    Collections.sort(incidents, (i1, i2) -> {
+      if (sortAscType) {
+        return i1.getIncidentType().compareToIgnoreCase(i2.getIncidentType());
+      } else {
+        return i2.getIncidentType().compareToIgnoreCase(i1.getIncidentType());
+      }
+    });
+    sortAscType = !sortAscType;
+    incidentAdapter.notifyDataSetChanged();
+
+    String arrow = sortAscType ? "↓":"↑";
+    btnTypeIncident.setText(getString(R.string.type_incident) + arrow);
+  }
+
+  private void sortByStatus() {
+    Collections.sort(incidents, (i1, i2) -> {
+      if (sortAscStatus) {
+        return i1.getStatus().compareToIgnoreCase(i2.getStatus());
+      } else {
+        return i2.getStatus().compareToIgnoreCase(i1.getStatus());
+      }
+    });
+    sortAscStatus = !sortAscStatus;
+    incidentAdapter.notifyDataSetChanged();
+
+    String arrow = sortAscType ?  "↓":"↑";
+    btnStatus.setText(getString(R.string.status_incident_list) + arrow);
+  }
+
 }
