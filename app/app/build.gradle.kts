@@ -61,6 +61,8 @@ dependencies {
   implementation("com.google.firebase:firebase-storage:20.2.1")
   implementation("androidx.activity:activity-ktx:1.9.0")
 
+  implementation("org.osmdroid:osmdroid-android:6.1.16")
+
   implementation("org.tensorflow:tensorflow-lite:2.13.0")
   implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
   implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")

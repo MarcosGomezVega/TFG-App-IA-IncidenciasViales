@@ -33,6 +33,7 @@
   <string name="error">Error</string>
   <string name="error_creating_image">Error al crear archivo de imagen</string>
   <string name="error_having_location">Error al obtener ubicación</string>
+  <string name="error_send_null_incident">No se puede enviar una foto que no sea incidencia, intenlo de nuevo</string>
   <string name="error_updating_UID_incident">Error al actualizar el UID en la incidencia</string>
   <string name="error_upload_photo">Error al subir la imagen</string>
   <string name="galery">Galeria</string>
@@ -62,6 +63,7 @@
   <string name="menu_home">Home</string>
   <string name="menu_info">Información</string>
   <string name="menu_logout">Cerrar Cuenta</string>
+  <string name="menu_map">Mapa</string>
   <string name="menu_settings">Ajustes</string>
   <string name="menu_share">Compartir</string>
   <string name="menu_slideshow">Comprobar Incidencia</string>
@@ -138,5 +140,7 @@
     <item>Español</item>
     <item>English</item>
   </string-array>
+  <!-- TODO: Remove or change this placeholder text -->
+  <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

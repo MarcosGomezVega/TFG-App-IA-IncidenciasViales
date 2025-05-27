@@ -27,5 +27,11 @@
     android:name="com.example.myapplication.ui.config.ConfigFragment"
     android:label="@string/menu_config"
     tools:layout="@layout/fragment_config" />
+  <fragment
+    android:id="@+id/nav_map"
+    android:name="com.example.myapplication.ui.map.MapFragment"
+    android:label="@string/menu_map"
+    tools:layout="@layout/fragment_map" />
+
 
 </navigation>
