@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -31,6 +32,8 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -89,7 +92,13 @@ public class MainActivity extends AppCompatActivity {
       .build();
     NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
     NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-    NavigationUI.setupWithNavController(navigationView, navController);
+
+
+    navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+      DrawerArrowDrawable drawerArrowDrawable = new DrawerArrowDrawable(this);
+      drawerArrowDrawable.setColor(ContextCompat.getColor(this, R.color.onPrimary));
+      binding.appBarMain.toolbar.setNavigationIcon(drawerArrowDrawable);
+    });
 
     navigationView.setNavigationItemSelectedListener(item -> {
       if (item.getItemId() == R.id.nav_logout) {
@@ -129,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
       }
     });
   }
+
 
   /**
    * Cierra la sesión del usuario actual y redirige a la pantalla de login.

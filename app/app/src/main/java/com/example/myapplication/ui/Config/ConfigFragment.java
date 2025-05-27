@@ -1,11 +1,13 @@
 package com.example.myapplication.ui.config;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -33,7 +35,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.example.myapplication.LocaleHelper;
 import com.example.myapplication.LoginActivity;
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -43,6 +47,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -88,7 +94,6 @@ public class ConfigFragment extends Fragment {
    * @param savedInstanceState Estado previo guardado del fragmento.
    * @return La vista creada para el fragmento.
    */
-  @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
 
@@ -123,54 +128,56 @@ public class ConfigFragment extends Fragment {
    */
 
   private void setupSpinner() {
-    ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-      getContext(),
-      R.array.languages_array,
-      android.R.layout.simple_spinner_item
-    );
+    String[] languages  = {getString(R.string.lenguage_chose), getString(R.string.spanish), getString(R.string.english)};
+    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, languages );
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinnerLenguage.setAdapter(adapter);
 
-    Locale currentLocale = Locale.getDefault();
-    String languageCode = currentLocale.getLanguage();
+    SharedPreferences prefs = requireActivity().getSharedPreferences("settings", Context.MODE_PRIVATE);
+    String savedLang = prefs.getString("lang", Locale.getDefault().getLanguage());
 
-    if (languageCode.equals("es")) {
+
       spinnerLenguage.setSelection(0);
-    } else {
-      spinnerLenguage.setSelection(1);
-    }
 
     spinnerLenguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+      boolean isFirstTime = true;
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (!userIsInteracting) return;
-
-        String language = parent.getItemAtPosition(position).toString();
-        String langCode;
-
-        if (language.equals("Español")) {
-          langCode = "es";
-          Toast.makeText(getContext(), getString(R.string.configuration_lenguage_spanish), Toast.LENGTH_SHORT).show();
-        } else if (language.equals("English")) {
-          langCode = "en";
-          Toast.makeText(getContext(), getString(R.string.configuration_lenguage_english), Toast.LENGTH_SHORT).show();
-        } else {
+        if (isFirstTime) {
+          isFirstTime = false;
           return;
         }
+        String selectedLang = parent.getItemAtPosition(position).toString();
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences("settings", Context.MODE_PRIVATE);
-        prefs.edit().putString("lang", langCode).apply();
+        if (selectedLang.equals(getString(R.string.spanish))) {
+          prefs.edit().putString("lang", "es").apply();
+          setLocal(requireActivity(), "es");
+          requireActivity().finish();
+          startActivity(new Intent(getContext(), MainActivity.class));
+        } else if (selectedLang.equals(getString(R.string.english))) {
+          prefs.edit().putString("lang", "en").apply();
+          setLocal(requireActivity(), "en");
+          requireActivity().finish();
+          startActivity(new Intent(getContext(), MainActivity.class));
+        }
 
-        requireActivity().recreate();
       }
 
       @Override
       public void onNothingSelected(AdapterView<?> parent) {
       }
-      //NA/A
     });
-  }
 
+  }
+    public void setLocal(Activity activity, String langCode) {
+    Locale locale = new Locale(langCode);
+    Locale.setDefault(locale);
+
+    Resources resources = activity.getResources();
+    Configuration configuration = resources.getConfiguration();
+    configuration.setLocale(locale);
+    resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+  }
 
   /**
    * Configura el interruptor para activar o desactivar el modo oscuro,
@@ -541,7 +548,6 @@ public class ConfigFragment extends Fragment {
       }
     );
   }
-
 
 
   /**
