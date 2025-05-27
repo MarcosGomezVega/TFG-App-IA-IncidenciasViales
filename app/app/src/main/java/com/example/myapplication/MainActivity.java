@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView = binding.navView;
 
     mAppBarConfiguration = new AppBarConfiguration.Builder(
-      R.id.nav_home, R.id.nav_Incidents, R.id.nav_config, R.id.nav_share, R.id.nav_info)
+      R.id.nav_home, R.id.nav_Incidents,R.id.nav_map, R.id.nav_config, R.id.nav_share, R.id.nav_info)
       .setOpenableLayout(drawer)
       .build();
     NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -170,7 +170,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, getString(R.string.dialog_share_WhatsApp_error), Toast.LENGTH_SHORT).show();
       }
     });
-
     btnEmail.setOnClickListener(v -> {
       Intent intent = new Intent(Intent.ACTION_SENDTO);
       intent.setData(Uri.parse("mailto:"));
@@ -183,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, getString(R.string.dialog_share_No_App_error), Toast.LENGTH_SHORT).show();
       }
     });
-
     btnCopy.setOnClickListener(v -> {
       ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
       ClipData clip = ClipData.newPlainText(getString(R.string.dialog_share_github_link), url);

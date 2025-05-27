@@ -136,7 +136,7 @@ public class HomeFragment extends Fragment {
     imageViewLocalizacion = root.findViewById(R.id.textLocation);
     spinnerIncidentType = root.findViewById(R.id.spinnerIncidentType);
 
-    String[] clases = {"Selecione una incidencia ...", "Grieta", "Bache leve", "Bache medio", "Bache grave", "Poste caído"};
+    String[] clases = {"Selecione una incidencia ...", "Grieta", "Agujero", "Poste caído", "Sin incidencia"};
 
     setupSpinner(clases);
     setupActivityLauncher(clases);
@@ -201,11 +201,11 @@ public class HomeFragment extends Fragment {
         Boolean cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
         Boolean locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
 
-        if (!cameraGranted) {
+        if (Boolean.FALSE.equals(cameraGranted)) {
           Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
         }
 
-        if (!locationGranted) {
+        if (Boolean.FALSE.equals(locationGranted)) {
           Toast.makeText(getContext(), getString(R.string.permission_locattion_not_enable), Toast.LENGTH_SHORT).show();
         }
       });
@@ -277,6 +277,12 @@ public class HomeFragment extends Fragment {
 
     if (incidentType == null || incidentType.isEmpty() || localitation.isEmpty() || currentPhotoPath == null || currentPhotoPath.isEmpty()) {
       Toast.makeText(getContext(), getString(R.string.gaps_empty), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if (incidentType.equals("Sin incidencia")) {
+      Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
+
       return;
     }
 
@@ -353,14 +359,14 @@ public class HomeFragment extends Fragment {
       Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
       float[][][][] input = preprocessBitmap(scaledBitmap);
 
-      float[][] output = new float[1][5];
+      float[][] output = new float[1][4];
       interpreter.run(input, output);
 
       int type = argMax(output[0]);
       float confidence = output[0][type];
       confidencePercentage = (int) (confidence * 100);
 
-      String[] types = {"Grieta", "Bache leve", "Bache medio", "Bache grave", "Poste caído"};
+      String[] types = {"Grieta", "Agujero", "Poste caído", "Sin incidencia"};
       incidentType = types[type];
 
       String result = incidentType + " " + confidencePercentage + "%";
