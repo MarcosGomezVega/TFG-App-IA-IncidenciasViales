@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
+import com.example.myapplication.manager.ChangeColorStatusManager;
 
 import java.util.List;
 
@@ -70,24 +71,7 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
     holder.btnView.setOnClickListener(v -> pushBtnViewIncient(incident));
     String state = incident.getStatus().toLowerCase();
 
-    switch (state) {
-      case "pendiente":
-        holder.txtStatus.setText(incident.getStatus());
-        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.red));
-        break;
-      case "en proceso":
-        holder.txtStatus.setText(incident.getStatus());
-        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.yellow));
-        break;
-      case "resuelta":
-        holder.txtStatus.setText(incident.getStatus());
-        holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.green));
-        break;
-      default:
-        holder.txtStatus.setText(incident.getStatus());
-        break;
-    }
-
+    ChangeColorStatusManager.applyStatus(holder.itemView.getContext(), holder.txtStatus, state);
 
   }
 

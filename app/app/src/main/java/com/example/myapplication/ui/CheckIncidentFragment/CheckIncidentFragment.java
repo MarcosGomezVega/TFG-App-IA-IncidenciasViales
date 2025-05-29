@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
+import com.example.myapplication.manager.ChangeColorStatusManager;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -98,31 +99,8 @@ public class CheckIncidentFragment extends Fragment {
 
   /**
    * Cambia el texto y color del estado mostrado según el estado de la incidencia.
-   * - "pendiente": texto en rojo
-   * - "en proceso": texto en amarillo
-   * - "resuelta": texto en verde
-   * - Otros: texto en gris claro
-   *
-   * @param state Estado de la incidencia (String)
    */
   private void changeColorStatus(String state) {
-    switch (state.toLowerCase()) {
-      case "pendiente":
-        txtStatus.setText(getString(R.string.waiting));
-        txtStatus.setTextColor(ContextCompat.getColor(getContext(), R.color.red));
-        break;
-      case "en proceso":
-        txtStatus.setText(getString(R.string.in_proces));
-        txtStatus.setTextColor(ContextCompat.getColor(getContext(), R.color.yellow));
-        break;
-      case "resuelta":
-        txtStatus.setText(getString(R.string.result));
-        txtStatus.setTextColor(ContextCompat.getColor(getContext(), R.color.green));
-        break;
-      default:
-        txtStatus.setText(state);
-        txtStatus.setTextColor(Color.LTGRAY);
-        break;
-    }
+    ChangeColorStatusManager.applyStatus(requireContext(), txtStatus, state);
   }
 }
