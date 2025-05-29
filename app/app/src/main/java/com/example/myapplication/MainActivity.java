@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.myapplication.manager.LogoutManager;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
     navigationView.setNavigationItemSelectedListener(item -> {
       if (item.getItemId() == R.id.nav_logout) {
-        logoutUser();
+        LogoutManager.logout(this, this);
         return true;
       } else if (item.getItemId() == R.id.nav_share) {
         showShareDialog();
@@ -139,17 +140,6 @@ public class MainActivity extends AppCompatActivity {
     });
   }
 
-
-  /**
-   * Cierra la sesión del usuario actual y redirige a la pantalla de login.
-   */
-  private void logoutUser() {
-    FirebaseAuth.getInstance().signOut();
-
-    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-    startActivity(intent);
-    finish();
-  }
 
   private void showShareDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);

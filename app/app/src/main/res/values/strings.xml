@@ -127,6 +127,7 @@
 
   <string name="error_saving_user">Error al guardar usuario en Firestore</string>
   <string name="error_create_Acount">Error al crear cuenta:</string>
+
   <string name="default_web_client_id">934980339087-i2o8g1r838sb7iquifsdvopqano1t5mh.apps.googleusercontent.com</string>
 
   <string name="dialog_share_title">Compartir aplicación</string>
