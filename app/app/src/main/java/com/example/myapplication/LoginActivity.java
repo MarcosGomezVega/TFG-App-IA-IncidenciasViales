@@ -1,37 +1,33 @@
 package com.example.myapplication;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import android.view.View;
 
-import com.example.myapplication.databinding.ActivityMainBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.internal.GoogleSignInOptionsExtensionParcelable;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,9 +45,9 @@ public class LoginActivity extends AppCompatActivity {
 
   private static final String HTML_RED_BOLD_OPEN = "<font color='#FF0000'><b>";
   private static final String HTML_BOLD_CLOSE = "</b></font>";
-  private static final int RC_SIG_IN = 100;
   private GoogleSignInClient googleSignInClient;
   private FirebaseAuth mAuth;
+  private ActivityResultLauncher<Intent> googleSignInLauncher;
 
 
   /**
@@ -67,15 +63,21 @@ public class LoginActivity extends AppCompatActivity {
     setContentView(R.layout.activity_login);
 
 
-
     GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
       .requestIdToken(getString(R.string.default_web_client_id))
       .requestEmail()
       .build();
 
+    googleSignInLauncher = registerForActivityResult(
+      new ActivityResultContracts.StartActivityForResult(),
+      result -> {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+          handleGoogleSignInResult(result.getData());
+        }
+      }
+    );
+
     googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
-
-
     mAuth = FirebaseAuth.getInstance();
 
     Button buttonLogin = findViewById(R.id.buttonLogin);
@@ -84,33 +86,46 @@ public class LoginActivity extends AppCompatActivity {
     ImageButton imageButtonGoogle = findViewById(R.id.buttonGoogle);
 
 
-    buttonLogin.setOnClickListener(v -> pushLoginButton(v, mAuth));
+    buttonLogin.setOnClickListener(v -> pushLoginButton(mAuth));
     buttonCreateAccount.setOnClickListener(this::pushCreateAccountButton);
-    imageButtonGoogle.setOnClickListener(v ->  pushBtnGoogle());
+    imageButtonGoogle.setOnClickListener(v -> pushBtnGoogle());
     imageButtonFacebook.setOnClickListener(v -> pushLoginFacebook());
 
 
   }
 
-  private void pushBtnGoogle(){
+  /**
+   * Inicia el proceso de inicio de sesión con Google.
+   * Lanza la actividad proporcionada por GoogleSignInClient para que el usuario seleccione una cuenta.
+   */
+  private void pushBtnGoogle() {
     Intent intent = googleSignInClient.getSignInIntent();
-    startActivityForResult(intent, RC_SIG_IN);
+    googleSignInLauncher.launch(intent);
   }
-  @Override
-  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
 
-    if (requestCode == RC_SIG_IN) {
-      Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(data);
-      try {
-        GoogleSignInAccount account = accountTask.getResult(ApiException.class);
-        firebaseAuthWithGoogleAcount(account);
-      } catch (Exception e) {
-
-      }
+  /**
+   * Procesa el resultado del intento de inicio de sesión con Google.
+   * Extrae la cuenta de Google del Intent y procede con la autenticación de Firebase.
+   *
+   * @param data Intent que contiene los datos de inicio de sesión de Google.
+   */
+  private void handleGoogleSignInResult(Intent data) {
+    Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(data);
+    try {
+      GoogleSignInAccount account = accountTask.getResult(ApiException.class);
+      firebaseAuthWithGoogleAcount(account);
+    } catch (Exception e) {
+      e.printStackTrace();
+      Toast.makeText(this, "Error en el inicio de sesión con Google", Toast.LENGTH_SHORT).show();
     }
   }
 
+  /**
+   * Autentica al usuario con Firebase utilizando la cuenta de Google obtenida.
+   * Si el usuario es nuevo, crea un registro en Firestore con sus datos.
+   *
+   * @param account Cuenta de Google obtenida tras el inicio de sesión exitoso.
+   */
   private void firebaseAuthWithGoogleAcount(GoogleSignInAccount account) {
 
     AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
@@ -147,9 +162,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
       })
-      .addOnFailureListener(e -> {
-        Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + "Fallo en autenticación con Google" + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
-      });
+      .addOnFailureListener(e -> Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + "Fallo en autenticación con Google" + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show());
   }
 
   /**
@@ -171,9 +184,9 @@ public class LoginActivity extends AppCompatActivity {
    * Maneja el clic del botón de inicio de sesión.
    * Valida el correo electrónico y la contraseña, muestra mensajes de error si es necesario, e inicia sesión si las credenciales son válidas.
    *
-   * @param v la vista que fue clicada
+   * @param mAuth Autentificación
    */
-  private void pushLoginButton(View v, FirebaseAuth mAuth) {
+  private void pushLoginButton(FirebaseAuth mAuth) {
     EditText editTextEmail = findViewById(R.id.emailLogin);
     EditText editTextPassword = findViewById(R.id.passwordLogin);
 
@@ -210,9 +223,12 @@ public class LoginActivity extends AppCompatActivity {
     startActivity(intent);
   }
 
-
+  /**
+   * Maneja el clic del botón para iniciar sesión con Facebook.
+   * Actualmente no implementado.
+   */
   private void pushLoginFacebook() {
-
+    //NA
   }
 
 

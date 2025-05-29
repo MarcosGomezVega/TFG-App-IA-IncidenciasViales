@@ -1,6 +1,8 @@
 package com.example.myapplication.ui.map;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -74,10 +76,9 @@ public class MapFragment extends Fragment {
                             @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
 
-    Configuration.getInstance().load(
-      requireContext(),
-      PreferenceManager.getDefaultSharedPreferences(requireContext())
-    );
+    SharedPreferences prefs = requireContext().getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE);
+    Configuration.getInstance().load(requireContext(), prefs);
+
     map = view.findViewById(R.id.map_fragment);
     map.setTileSource(TileSourceFactory.MAPNIK);
     map.setMultiTouchControls(true);
@@ -85,6 +86,7 @@ public class MapFragment extends Fragment {
     firstLocalitation();
     loadUserIncidentsAndAddMarkers();
   }
+
 
   /**
    * Carga los incidentes asociados al usuario actual desde Firebase Firestore
@@ -122,7 +124,7 @@ public class MapFragment extends Fragment {
   private void addMarkers(List<Incident> incidents) {
     for (Incident inc : incidents) {
       double[] coords = parseLatLon(inc.getLocalitation());
-      if (coords != null) {
+      if (coords.length == 2) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(coords[0], coords[1]));
         marker.setTitle(inc.getIncidentType());
@@ -166,7 +168,7 @@ public class MapFragment extends Fragment {
       return new double[]{lat, lon};
     } catch (Exception e) {
       e.printStackTrace();
-      return null;
+      return new double[0];
     }
 
   }

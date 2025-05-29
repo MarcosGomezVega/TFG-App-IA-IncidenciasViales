@@ -100,11 +100,6 @@ public class HomeFragment extends Fragment {
   private ActivityResultLauncher<Uri> takePictureLauncher;
 
   /**
-   * Lanzador para pedir permiso de la cámara
-   */
-  private ActivityResultLauncher<String> requestCameraPermissionLauncher;
-
-  /**
    * Porcentaje de confianza de la predicción del modelo
    */
   private int incidentPercentage;
