@@ -39,6 +39,7 @@ dependencies {
   implementation("androidx.constraintlayout:constraintlayout:2.2.1")
   implementation("com.google.android.gms:play-services-location:21.0.1")
 
+
   implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
   implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
 
