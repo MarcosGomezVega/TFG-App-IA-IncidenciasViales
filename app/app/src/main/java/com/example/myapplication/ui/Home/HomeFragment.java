@@ -1,5 +1,7 @@
 package com.example.myapplication.ui.home;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -237,6 +239,7 @@ public class HomeFragment extends Fragment {
         String select = clases[position];
         incidentPercentage = 100;
         imageViewIncidentType.setText(select);
+        incidentType = select;
       }
 
       @Override
@@ -280,12 +283,16 @@ public class HomeFragment extends Fragment {
       return;
     }
 
-    if (incidentType.equals("Sin incidencia")) {
-      Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
+    /**
+     *
+     *
+     if (incidentType.equals("Sin incidencia")) {
+     Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
+     return;
+     }
 
-      return;
-    }
-
+     enviarCorreo(localitation, date, incidentType);
+     */
     uploadImageToFirebaseStorage(incidentType, localitation, date, status, incidentPercentage);
 
     spinnerIncidentType.setVisibility(View.GONE);
@@ -296,6 +303,28 @@ public class HomeFragment extends Fragment {
     imageView.setImageResource(0);
     currentPhotoPath = null;
   }
+/**
+ private void enviarCorreo(String localitation, String date, String incidentType) {
+
+ String correoDestino = "marcosgomezvegaportillo@gmail.com";
+ String asunto = "Incidencia Reportada: " + incidentType;
+ String mensaje = "Detalles de la incidencia:\n" +
+ "Tipo: " + incidentType + "\n" +
+ "Localización: " + localitation + "\n" +
+ "Fecha: " + date + "\n";
+
+ Intent intent = new Intent(Intent.ACTION_SENDTO);
+ intent.setData(Uri.parse("mailto:" + Uri.encode(correoDestino))); // ← añade destinatario en URI
+ intent.putExtra(Intent.EXTRA_SUBJECT, asunto);
+ intent.putExtra(Intent.EXTRA_TEXT, mensaje);
+
+ try {
+ startActivity(intent);
+ } catch (ActivityNotFoundException e) {
+ Toast.makeText(getContext(), "No hay app de correo instalada", Toast.LENGTH_SHORT).show();
+ }
+ }
+ */
 
   /**
    * Abre la cámara del dispositivo para tomar una fotografía y guarda temporalmente la imagen capturada.
