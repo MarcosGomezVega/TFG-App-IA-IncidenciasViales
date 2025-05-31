@@ -26,6 +26,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
@@ -82,8 +83,8 @@ public class LoginActivity extends AppCompatActivity {
 
     Button buttonLogin = findViewById(R.id.buttonLogin);
     Button buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
-    ImageButton imageButtonFacebook = findViewById(R.id.buttonFacebook);
-    ImageButton imageButtonGoogle = findViewById(R.id.buttonGoogle);
+    Button imageButtonFacebook = findViewById(R.id.buttonFacebook);
+    Button imageButtonGoogle = findViewById(R.id.buttonGoogle);
 
 
     buttonLogin.setOnClickListener(v -> pushLoginButton(mAuth));
@@ -167,7 +168,7 @@ public class LoginActivity extends AppCompatActivity {
 
   /**
    * Llamado después de onCreate() o después de que la actividad haya sido detenida y se esté reiniciando.
-   * Verifica si ya hay usuarios registrados; si es así, redirige a la actividad principal.
+   * Verifica si ya hay usuarios registrados; si es así, redirige a la actividad principal y actuliza el lastLogin.
    */
   @Override
   protected void onStart() {
@@ -175,8 +176,19 @@ public class LoginActivity extends AppCompatActivity {
 
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
     if (currentUser != null) {
-      startActivity(new Intent(LoginActivity.this, MainActivity.class));
-      finish();
+      FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+      if (user != null) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String uid = user.getUid();
+
+        Map<String, Object> update = new HashMap<>();
+        String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        update.put("lastLogin", currentDateTime);
+
+        db.collection("users").document(uid).update(update);
+        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        finish();
+      }
     }
   }
 
@@ -201,6 +213,17 @@ public class LoginActivity extends AppCompatActivity {
       mAuth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener(this, task -> {
           if (task.isSuccessful()) {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+              FirebaseFirestore db = FirebaseFirestore.getInstance();
+              String uid = user.getUid();
+
+              Map<String, Object> update = new HashMap<>();
+              String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+              update.put("lastLogin", currentDateTime);
+
+              db.collection("users").document(uid).update(update);
+            }
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
