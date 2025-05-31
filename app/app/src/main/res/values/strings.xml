@@ -136,6 +136,8 @@
   <string name="dialog_share_No_App_error">No hay apps de correo disponibles</string>
   <string name="dialog_share_github_link">GitHub Link</string>
   <string name="dialog_share_copy_link">Enlace copiado al portapapelesk</string>
+  <string name="google">Continuar con Google</string>
+  <string name="facebook">Continuar con Facebook</string>
 
   <string-array name="languages_array">
     <item>Español</item>
