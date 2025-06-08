@@ -13,7 +13,7 @@
     android:layout_width="393dp"
     android:layout_height="249dp"
     android:layout_marginTop="8dp"
-    android:src="@mipmap/ic_launcher"
+    android:src="@mipmap/ic_launcher_foreground"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent" />
@@ -108,7 +108,7 @@
     android:backgroundTint="@color/primaryContainer"
     android:drawableLeft="@drawable/icons8_facebook"
     android:gravity="center"
-    android:text="Continuar con Facebook"
+    android:text="@string/facebook"
     android:textAllCaps="false"
     android:textColor="@color/black"
     android:textSize="16sp"

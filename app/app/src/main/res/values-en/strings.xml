@@ -137,7 +137,7 @@
   <string name="dialog_share_copy_link">Link copied to clipboard</string>
 
   <string name="google">Continue with Google</string>
-  <string name="facebook">Continue with Google</string>
+  <string name="facebook">Continue with Facebook</string>
 
   <string-array name="languages_array">
     <item>Spanish</item>
