@@ -44,8 +44,6 @@ import java.util.Map;
  */
 public class LoginActivity extends AppCompatActivity {
 
-  private static final String HTML_RED_BOLD_OPEN = "<font color='#FF0000'><b>";
-  private static final String HTML_BOLD_CLOSE = "</b></font>";
   private GoogleSignInClient googleSignInClient;
   private FirebaseAuth mAuth;
   private ActivityResultLauncher<Intent> googleSignInLauncher;
@@ -163,7 +161,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
       })
-      .addOnFailureListener(e -> Toast.makeText(this, Html.fromHtml(HTML_RED_BOLD_OPEN + "Fallo en autenticación con Google" + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show());
+      .addOnFailureListener(e -> Toast.makeText(this,  "Fallo en autenticación con Google" , Toast.LENGTH_SHORT).show());
   }
 
   /**
@@ -206,9 +204,9 @@ public class LoginActivity extends AppCompatActivity {
     String password = editTextPassword.getText().toString().trim();
 
     if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-      Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.gaps_empty) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this,  getString(R.string.gaps_empty), Toast.LENGTH_SHORT).show();
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-      Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.invalid_email) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this, getString(R.string.invalid_email) , Toast.LENGTH_SHORT).show();
     } else {
       mAuth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener(this, task -> {
@@ -228,7 +226,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
           } else {
-            Toast.makeText(LoginActivity.this, Html.fromHtml(HTML_RED_BOLD_OPEN + getString(R.string.email_passwd_dont_match) + HTML_BOLD_CLOSE, Html.FROM_HTML_MODE_LEGACY), Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this,  getString(R.string.email_passwd_dont_match) , Toast.LENGTH_SHORT).show();
           }
         });
     }

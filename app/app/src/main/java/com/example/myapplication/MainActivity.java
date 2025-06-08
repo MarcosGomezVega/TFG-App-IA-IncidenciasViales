@@ -88,17 +88,19 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView = binding.navView;
 
     mAppBarConfiguration = new AppBarConfiguration.Builder(
-      R.id.nav_home, R.id.nav_Incidents,R.id.nav_map, R.id.nav_config, R.id.nav_share, R.id.nav_info)
+      R.id.nav_home, R.id.nav_Incidents, R.id.nav_map, R.id.nav_config, R.id.nav_share, R.id.nav_info)
       .setOpenableLayout(drawer)
       .build();
+
     NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+
     NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
 
-
     navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-      DrawerArrowDrawable drawerArrowDrawable = new DrawerArrowDrawable(this);
-      drawerArrowDrawable.setColor(ContextCompat.getColor(this, R.color.onPrimary));
-      binding.appBarMain.toolbar.setNavigationIcon(drawerArrowDrawable);
+      Drawable navIcon = binding.appBarMain.toolbar.getNavigationIcon();
+      if (navIcon != null) {
+        navIcon.setColorFilter(ContextCompat.getColor(this, R.color.onPrimary), android.graphics.PorterDuff.Mode.SRC_ATOP);
+      }
     });
 
     navigationView.setNavigationItemSelectedListener(item -> {
