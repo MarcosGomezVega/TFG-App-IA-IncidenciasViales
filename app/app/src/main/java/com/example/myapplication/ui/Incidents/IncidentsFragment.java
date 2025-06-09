@@ -100,6 +100,8 @@ public class IncidentsFragment extends Fragment {
     }
     return root;
   }
+
+
   /**
    * Ordena la lista de incidencias en memoria por la fecha en orden descendente (más reciente primero).
    * La fecha se interpreta a partir de un String con formato "yyyy-MM-dd HH:mm:ss".
@@ -119,6 +121,8 @@ public class IncidentsFragment extends Fragment {
       }
     });
   }
+
+
   private void sortByType() {
     Collections.sort(incidents, (i1, i2) -> {
       if (sortAscType) {

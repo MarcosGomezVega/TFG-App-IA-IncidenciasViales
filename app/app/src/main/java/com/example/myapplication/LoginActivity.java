@@ -81,14 +81,13 @@ public class LoginActivity extends AppCompatActivity {
 
     Button buttonLogin = findViewById(R.id.buttonLogin);
     Button buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
-    Button imageButtonFacebook = findViewById(R.id.buttonFacebook);
     Button imageButtonGoogle = findViewById(R.id.buttonGoogle);
 
 
     buttonLogin.setOnClickListener(v -> pushLoginButton(mAuth));
     buttonCreateAccount.setOnClickListener(this::pushCreateAccountButton);
     imageButtonGoogle.setOnClickListener(v -> pushBtnGoogle());
-    imageButtonFacebook.setOnClickListener(v -> pushLoginFacebook());
+
 
 
   }
@@ -244,13 +243,7 @@ public class LoginActivity extends AppCompatActivity {
     startActivity(intent);
   }
 
-  /**
-   * Maneja el clic del botón para iniciar sesión con Facebook.
-   * Actualmente no implementado.
-   */
-  private void pushLoginFacebook() {
-    //NA
-  }
+
 
 
 }

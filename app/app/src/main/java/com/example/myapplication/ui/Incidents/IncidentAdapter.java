@@ -2,7 +2,9 @@ package com.example.myapplication.ui.incidents;
 
 import android.content.Context;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,14 +20,25 @@ import com.example.myapplication.R;
 import com.example.myapplication.manager.ChangeColorStatusManager;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Adaptador personalizado para mostrar una lista de incidentes en un RecyclerView.
  * Permite visualizar el tipo y estado del incidente, y proporciona un botón para ver detalles.
  */
 public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.IncidentViewHolder> {
+  /**
+   * Contexto de la actividad o fragmento.
+   */
   private Context context;
+  /**
+   * Lista de incidentes a mostrar en el RecyclerView.
+   */
   private List<Incident> incidentList;
+
+  /**
+   * Controlador de navegación para gestionar transiciones de pantalla.
+   */
   private NavController navController;
 
   /**
@@ -48,7 +61,6 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
    * @param viewType Tipo de vista del nuevo ítem.
    * @return Una nueva instancia de {@link IncidentViewHolder}.
    */
-
   @Override
   public IncidentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
     View view = LayoutInflater.from(context).inflate(R.layout.item_incident, parent, false);
@@ -65,7 +77,8 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
   public void onBindViewHolder(IncidentViewHolder holder, int position) {
 
     Incident incident = incidentList.get(position);
-    holder.txtTypeIncident.setText(String.valueOf(incident.getIncidentType()));
+    holder.txtTypeIncident.setText(translateIncidentType(incident.getIncidentType()));
+
 
     holder.btnView.setOnClickListener(v -> pushBtnViewIncient(incident));
     String state = incident.getStatus().toLowerCase();
@@ -73,6 +86,46 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
     ChangeColorStatusManager.applyStatus(holder.itemView.getContext(), holder.txtStatus, state);
 
   }
+
+  /**
+   * Traduce el tipo de incidente al inglés si el idioma actual es inglés.
+   * Usa las preferencias guardadas o, si no existen, el idioma del sistema.
+   *
+   * @param type Tipo de incidente en texto.
+   * @return Tipo de incidente traducido si corresponde, o el mismo texto si no se necesita traducir.
+   */
+  private String translateIncidentType(String type) {
+    SharedPreferences prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+
+    String lang = prefs.getString("lang", null); // null si no hay idioma guardado
+    Log.d("LANG_DEBUG", "Current language share preferecnces: " + lang);
+
+    if (lang == null) {
+      // No hay idioma guardado, tomar el idioma del sistema
+      Locale systemLocale = Locale.getDefault();
+      lang = systemLocale.getLanguage();
+    }
+
+    Log.d("LANG_DEBUG", "Current language sin idioma guardado: " + lang);
+
+    boolean isEnglish = lang.equals("en");
+
+    if (!isEnglish) return type;
+
+    switch (type.toLowerCase()) {
+      case "grieta":
+        return "Crack";
+      case "agujero":
+        return "Pothole";
+      case "poste caído":
+        return "Fallen pole";
+      case "sin incidencia":
+        return "No incident";
+      default:
+        return type;
+    }
+  }
+
 
   /**
    * Navega a la vista de detalle del incidente seleccionado.

@@ -6,9 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,11 +14,9 @@ import android.util.Log;
 
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +29,6 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
@@ -45,10 +40,6 @@ import com.example.myapplication.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.auth.User;
-
-import java.io.File;
-import java.io.InputStream;
 
 /**
  * Actividad principal de la aplicación.
@@ -205,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
     return NavigationUI.navigateUp(navController, mAppBarConfiguration)
       || super.onSupportNavigateUp();
   }
-
 
   /**
    * Actualiza la información del header del Navigation Drawer con los datos del usuario actual:
