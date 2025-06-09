@@ -60,7 +60,7 @@
   <string name="look_incident">View my incidents</string>
   <string name="menu_config">Settings</string>
   <string name="menu_incident">Incidents</string>
-  <string name="menu_checkIncident">Check Incident</string>
+  <string name="menu_checkIncident">Incident Details</string>
   <string name="menu_home">Home</string>
   <string name="menu_info">Information</string>
   <string name="menu_logout">Sign out</string>
@@ -135,6 +135,7 @@
   <string name="dialog_share_No_App_error">No email apps available</string>
   <string name="dialog_share_github_link">GitHub Link</string>
   <string name="dialog_share_copy_link">Link copied to clipboard</string>
+  <string name="view">VIEW</string>
 
   <string name="google">Continue with Google</string>
   <string name="facebook">Continue with Facebook</string>
