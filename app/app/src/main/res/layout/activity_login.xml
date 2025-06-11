@@ -85,7 +85,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="32dp"
-    android:layout_marginTop="32dp"
+    android:layout_marginTop="64dp"
     android:layout_marginEnd="32dp"
     android:backgroundTint="@color/primaryContainer"
     android:drawableLeft="@drawable/icons8_google"
@@ -94,29 +94,12 @@
     android:textAllCaps="false"
     android:textColor="@color/black"
     android:textSize="16sp"
+    app:cornerRadius="16dp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:cornerRadius="16dp"
     app:layout_constraintTop_toBottomOf="@+id/buttonCreateAccount" />
 
-  <Button
-    android:id="@+id/buttonFacebook"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="32dp"
-    android:layout_marginEnd="32dp"
-    android:backgroundTint="@color/primaryContainer"
-    android:drawableLeft="@drawable/icons8_facebook"
-    android:gravity="center"
-    android:text="@string/facebook"
-    android:textAllCaps="false"
-    android:textColor="@color/black"
-    android:textSize="16sp"
-    app:cornerRadius="16dp"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHorizontal_bias="1.0"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/buttonGoogle" />
+
 
 
 

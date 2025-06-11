@@ -139,6 +139,7 @@
 
   <string name="google">Continue with Google</string>
   <string name="facebook">Continue with Facebook</string>
+  <string name="permission_notification_not_enable">Notification permission not granted</string>
 
   <string-array name="languages_array">
     <item>Spanish</item>
