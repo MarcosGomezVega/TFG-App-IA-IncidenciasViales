@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,10 @@ import com.example.myapplication.ui.config.manager.AvatarManager;
 import com.example.myapplication.ui.config.manager.DeleteAccountManager;
 import com.example.myapplication.ui.config.manager.EmailManager;
 import com.example.myapplication.ui.config.manager.PasswordManager;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.Locale;
 
@@ -43,7 +48,7 @@ import java.util.Locale;
  * - Cambiar email, contraseña y avatar
  * - Eliminar cuenta
  * - Cerrar sesión
- *
+ * <p>
  * Este fragmento actúa como panel de control de la configuración personal del usuario.
  */
 public class ConfigFragment extends Fragment {
@@ -96,6 +101,8 @@ public class ConfigFragment extends Fragment {
     Button btnChangeAvatar = root.findViewById(R.id.btnChangeAvatar);
     Button btnDeleteAcount = root.findViewById(R.id.btnDeleteAccount);
     Button btnLogOut = root.findViewById(R.id.btnLogout);
+
+    loadNotificationPreference();
 
     setupActivityLaunchers();
     setupSpinner();
@@ -194,18 +201,75 @@ public class ConfigFragment extends Fragment {
     });
   }
 
+  private void loadNotificationPreference() {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    if (user == null) {
+      return;
+    }
+
+    FirebaseMessaging.getInstance().getToken()
+      .addOnSuccessListener(token -> {
+        if (token == null || token.isEmpty()) {
+          return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("device_tokens")
+          .document(token)
+          .get()
+          .addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+              Boolean isActivated = documentSnapshot.getBoolean("notification_activated");
+              if (isActivated != null) {
+                switchNotification.setChecked(isActivated);
+              }
+            }
+          })
+          .addOnFailureListener(e -> Log.e("TOKEN", "Error al cargar preferencia: " + e.getMessage()));
+      })
+      .addOnFailureListener(e -> Log.e("TOKEN", "Error al obtener token del dispositivo: " + e.getMessage()));
+  }
   /**
    * Configura el interruptor para activar o desactivar las notificaciones,
-   * mostrando mensajes acorde al estado.
+   * mostrando mensajes acorde al estado y actualizando Firestore.
    */
   private void setUpNotificationModeSwitch() {
     switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
-      if (isChecked) {
-        Toast.makeText(getContext(), getString(R.string.notification_activated), Toast.LENGTH_SHORT).show();
-      } else {
-        Toast.makeText(getContext(), getString(R.string.notification_disable), Toast.LENGTH_SHORT).show();
+      Context context = getContext();
+      if (context == null) {
+        return;
       }
+
+      updateNotificationPreference(isChecked);
     });
+  }
+
+  /**
+   * Actualiza la preferencia de notificaciones en Firestore
+   * para el token actual del dispositivo.
+   */
+  private void updateNotificationPreference(boolean isEnabled) {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    if (user == null) {
+      return;
+    }
+
+    FirebaseMessaging.getInstance().getToken()
+      .addOnSuccessListener(token -> {
+        if (token == null || token.isEmpty()) {
+          return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("device_tokens")
+          .document(token)
+          .update("notification_activated", isEnabled)
+          .addOnSuccessListener(aVoid -> Log.d("TOKEN", "Preferencia actualizada exitosamente en Firestore"))
+          .addOnFailureListener(e -> Log.e("TOKEN", "Error al actualizar preferencia en Firestore: " + e.getMessage()));
+      })
+      .addOnFailureListener(e -> Log.e("TOKEN", "Error al obtener token del dispositivo: " + e.getMessage()));
   }
 
   /**

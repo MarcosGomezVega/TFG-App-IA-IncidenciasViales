@@ -35,7 +35,9 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -124,6 +126,8 @@ public class HomeFragment extends Fragment {
     View root = inflater.inflate(R.layout.fragment_home, container, false);
 
     requestPermissionsAtStartup();
+    notification();
+
 
     Button btnTakePhoto = root.findViewById(R.id.btnTakePhoto);
     Button btnSendIncident = root.findViewById(R.id.btnSendIncident);
@@ -145,6 +149,44 @@ public class HomeFragment extends Fragment {
     return root;
   }
 
+  private void notification() {
+    FirebaseMessaging.getInstance().getToken()
+      .addOnCompleteListener(task -> {
+        if (!task.isSuccessful()) {
+          System.out.println("Error al obtener el token");
+          return;
+        }
+        String token = task.getResult();
+        System.out.println("Este es el token del dispositivo: " + token);
+        saveTokenToFirestore(token);
+      });
+  }
+
+  private void saveTokenToFirestore(String token) {
+    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    DocumentReference tokenRef = db.collection("device_tokens").document(token);
+
+    tokenRef.get().addOnSuccessListener(documentSnapshot -> {
+      if (!documentSnapshot.exists()) {
+        // Solo crear si no existe
+        Map<String, Object> tokenData = new HashMap<>();
+        tokenData.put("userId", userId);
+        tokenData.put("token", token);
+        tokenData.put("timestamp", System.currentTimeMillis());
+        tokenData.put("notification_activated", true); // valor por defecto solo al crear
+
+        tokenRef.set(tokenData)
+          .addOnSuccessListener(aVoid -> System.out.println("Token guardado correctamente"))
+          .addOnFailureListener(e -> System.out.println("Error al guardar token: " + e.getMessage()));
+      } else {
+        System.out.println("Token ya registrado. No se sobrescribe.");
+      }
+    }).addOnFailureListener(e -> {
+      System.out.println("Error al consultar token: " + e.getMessage());
+    });
+  }
   /**
    * Configura el Spinner que permite seleccionar manualmente un tipo de incidencia.
    *
@@ -197,6 +239,7 @@ public class HomeFragment extends Fragment {
       registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
         Boolean cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
         Boolean locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+        Boolean noticationGranted  = result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
 
         if (Boolean.FALSE.equals(cameraGranted)) {
           Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
@@ -205,11 +248,17 @@ public class HomeFragment extends Fragment {
         if (Boolean.FALSE.equals(locationGranted)) {
           Toast.makeText(getContext(), getString(R.string.permission_locattion_not_enable), Toast.LENGTH_SHORT).show();
         }
+
+        if (Boolean.FALSE.equals(noticationGranted)) {
+          Toast.makeText(getContext(), getString(R.string.permission_notification_not_enable), Toast.LENGTH_SHORT).show();
+        }
+
       });
 
     multiplePermissionLauncher.launch(new String[]{
       Manifest.permission.CAMERA,
-      Manifest.permission.ACCESS_FINE_LOCATION
+      Manifest.permission.ACCESS_FINE_LOCATION,
+      Manifest.permission.POST_NOTIFICATIONS
     });
   }
 
