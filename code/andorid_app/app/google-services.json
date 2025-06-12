@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "934980339087",
+    "project_id": "app-deteccion-incidencias-ia",
+    "storage_bucket": "app-deteccion-incidencias-ia.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934980339087:android:dda6b7da1ee7b6ce8577fa",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934980339087-po69f6kdukl8tmm98apbtiudh5u4hmsk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myapplication",
+            "certificate_hash": "aae1d4c2cfef42f92963cd1944e00f896ba7c3b9"
+          }
+        },
+        {
+          "client_id": "934980339087-i2o8g1r838sb7iquifsdvopqano1t5mh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArO62qbDdrYHjnKlHTBucvLK6MVkvWV3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934980339087-i2o8g1r838sb7iquifsdvopqano1t5mh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
