@@ -85,3 +85,5 @@ tf_env/
 # Ignore img
 img/
 
+# Ignore github workflows
+.github/workflows/
