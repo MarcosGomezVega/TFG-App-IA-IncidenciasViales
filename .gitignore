@@ -81,7 +81,7 @@ node_modules/
 .code/AI_model/images
 
 # Ignore environment-specific files
-.tf_env/
-
+tf_env/
 # Ignore img
-.img/
+img/
+
