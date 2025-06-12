@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:id="@+id/dialog_share"
+  android:padding="16dp"
+  android:background="@color/primaryContainer">
+
+  <TextView
+    android:id="@+id/url_github"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:text="https://github.com/MarcosGomezVega/TFG-App-IA-IncidenciasViales.git"
+    android:textColor="@color/black"
+    android:textIsSelectable="true"
+    android:textSize="16sp"
+    android:gravity="center"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"/>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/share_buttons"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    app:layout_constraintTop_toBottomOf="@id/url_github"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:layout_marginBottom="16dp">
+
+    <ImageButton
+      android:id="@+id/btn_whatsapp"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_marginStart="32dp"
+      android:layout_marginEnd="32dp"
+      android:background="@null"
+      android:contentDescription="Compartir en WhatsApp"
+      android:src="@drawable/icons8_whatsapp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toStartOf="@+id/btn_email"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+      android:id="@+id/btn_email"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:background="@null"
+      android:contentDescription="Compartir por correo"
+      android:src="@drawable/icons8_gmail"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toStartOf="@+id/btn_copy"
+      app:layout_constraintStart_toEndOf="@+id/btn_whatsapp"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+      android:id="@+id/btn_copy"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_marginStart="32dp"
+      android:layout_marginEnd="32dp"
+      android:background="@null"
+      android:contentDescription="Copiar enlace"
+      android:src="@drawable/baseline_content_copy_24"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@+id/btn_email"
+      app:layout_constraintTop_toTopOf="parent" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
