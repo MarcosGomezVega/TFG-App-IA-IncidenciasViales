@@ -77,8 +77,8 @@ node_modules/
 .dotnet/
 
 #datasets
-.code/AI_model/datasets
-.code/AI_model/images
+code/AI_model/datasets/
+code/AI_model/images/
 
 # Ignore environment-specific files
 tf_env/
