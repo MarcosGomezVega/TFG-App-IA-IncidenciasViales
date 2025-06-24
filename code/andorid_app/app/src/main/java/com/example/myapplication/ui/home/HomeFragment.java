@@ -2,6 +2,8 @@ package com.example.myapplication.ui.home;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -47,6 +49,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -392,9 +395,8 @@ public class HomeFragment extends Fragment {
         Toast.LENGTH_SHORT).show();
     }
   }
-
   /**
-   * Obtiene la última ubicación conocida del dispositivo y la muestra en la interfaz.
+   * Obtiene la última ubicación del dispositivo y muestra la calle, ciudad y país en el TextView.
    */
   private void getLastLocation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -404,8 +406,38 @@ public class HomeFragment extends Fragment {
         if (location != null) {
           double lat = location.getLatitude();
           double lon = location.getLongitude();
-          String coords = "Lat: " + lat + ", Lon: " + lon;
-          imageViewLocalizacion.setText(coords);
+
+          // Geocodificación inversa: obtener dirección
+          Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+          try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+              Address address = addresses.get(0);
+
+              String street = address.getThoroughfare();  // Calle
+              String city = address.getLocality();         // Ciudad
+              String country = address.getCountryName();   // País
+
+              // Fallbacks si algo es null
+              if (street == null) street = address.getAddressLine(0);
+              if (city == null) city = "";
+              if (country == null) country = "";
+
+              // Formar dirección completa
+              String fullAddress = street;
+              if (!city.isEmpty()) fullAddress += ", " + city;
+              if (!country.isEmpty()) fullAddress += ", " + country;
+
+              imageViewLocalizacion.setText(fullAddress); // Mostrar dirección completa
+              imageViewLocalizacion.setTag(new double[]{lat, lon}); // Guardar coordenadas
+            } else {
+              imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+            imageViewLocalizacion.setText(getString(R.string.error_having_location));
+          }
+
         } else {
           imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
         }
@@ -416,6 +448,8 @@ public class HomeFragment extends Fragment {
       imageViewLocalizacion.setText(getString(R.string.permission_locattion_not_enable));
     }
   }
+
+
 
   /**
    * Predice el tipo de incidencia utilizando un modelo TensorFlow Lite y muestra el resultado con el porcentaje de confianza.
@@ -516,12 +550,11 @@ public class HomeFragment extends Fragment {
     currentPhotoPath = image.getAbsolutePath();
     return image;
   }
-
   /**
    * Guarda la información de una incidencia en Firestore, incluyendo usuario, tipo, localización, foto, fecha y estado.
    *
    * @param incidentType       Tipo de incidencia detectado o seleccionado.
-   * @param localitation       Coordenadas de la ubicación donde se detectó la incidencia.
+   * @param localitation       Calle legible de la ubicación donde se detectó la incidencia.
    * @param imageUrl           Ruta local de la imagen capturada.
    * @param date               Fecha y hora del registro.
    * @param status             Estado inicial de la incidencia.
@@ -541,13 +574,18 @@ public class HomeFragment extends Fragment {
       incidentData.put("status", status);
       incidentData.put("error_percentage", incidentPercentage);
 
+
+      Object tag = imageViewLocalizacion.getTag();
+      if (tag instanceof double[]) {
+        double[] coords = (double[]) tag;
+        String coordString = "Lat: " + coords[0] + ", Lon: " + coords[1];
+        incidentData.put("coordinates", coordString);
+      }
+
       db.collection("incidents")
         .add(incidentData)
         .addOnSuccessListener(documentReference -> {
           String incidentId = documentReference.getId();
-
-          incidentData.put("uid", incidentId);
-
           documentReference.update("uid", incidentId)
             .addOnSuccessListener(aVoid ->
               Toast.makeText(getContext(), getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show()

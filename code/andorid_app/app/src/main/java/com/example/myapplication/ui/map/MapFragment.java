@@ -4,10 +4,12 @@ import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -30,6 +35,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapAdapter;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -43,18 +50,12 @@ import java.util.List;
  * Utiliza OpenStreetMap (osmdroid) para renderizar el mapa y Firebase Firestore para obtener datos.
  */
 public class MapFragment extends Fragment {
-  /**
-   * Vista del mapa donde se colocan los marcadores
-   */
   private MapView map;
+  private static final String TAG = "MapFragment";
+  private FirebaseUser currentUser;
 
   /**
-   * Inflar la vista del fragmento con el layout correspondiente.
-   *
-   * @param inflater           Inflater para inflar vistas XML.
-   * @param container          Contenedor padre.
-   * @param savedInstanceState Estado previo guardado.
-   * @return Vista inflada para el fragmento.
+   * Vista del fragmento inflada.
    */
   @Nullable
   @Override
@@ -65,11 +66,7 @@ public class MapFragment extends Fragment {
   }
 
   /**
-   * Método llamado después de crear la vista. Aquí se configura el mapa, se carga la ubicación inicial
-   * y se cargan los incidentes del usuario para mostrar marcadores en el mapa.
-   *
-   * @param view               Vista creada.
-   * @param savedInstanceState Estado previo guardado.
+   * Configura mapa, ubicación inicial y carga marcadores según zoom.
    */
   @Override
   public void onViewCreated(@NonNull View view,
@@ -83,22 +80,52 @@ public class MapFragment extends Fragment {
     map.setTileSource(TileSourceFactory.MAPNIK);
     map.setMultiTouchControls(true);
     map.getController().setZoom(6.0);
+
+    currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
     firstLocalitation();
-    loadUserIncidentsAndAddMarkers();
+
+    map.addMapListener(new MapAdapter() {
+      @Override
+      public boolean onZoom(final ZoomEvent event) {
+        double currentZoom = map.getZoomLevelDouble();
+        updateMarkersAccordingToZoom(currentZoom);
+        return true;
+      }
+    });
+
+    updateMarkersAccordingToZoom(map.getZoomLevelDouble());
   }
 
+  /**
+   * Decide qué marcadores cargar según el nivel de zoom.
+   * @param zoom Nivel de zoom actual del mapa.
+   */
+  private void updateMarkersAccordingToZoom(double zoom) {
+    map.getOverlays().clear();
+
+    if (currentUser == null) {
+      Log.d(TAG, "Usuario no autenticado, no se cargan marcadores.");
+      return;
+    }
+    if (zoom >= 15.0) {
+      loadUserIncidentsAndAddMarkers();
+      loadOtherUsersIncidentsAndAddMarkers();
+    } else {
+      loadUserIncidentsAndAddMarkers();
+    }
+    map.invalidate();
+  }
 
   /**
-   * Carga los incidentes asociados al usuario actual desde Firebase Firestore
-   * y añade marcadores en el mapa para cada incidencia.
+   * Carga las incidencias del usuario actual y añade marcadores al mapa.
    */
   private void loadUserIncidentsAndAddMarkers() {
-    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    if (user == null) return;
+    if (currentUser == null) return;
 
     FirebaseFirestore.getInstance()
       .collection("incidents")
-      .whereEqualTo("user_id", user.getUid())
+      .whereEqualTo("user_id", currentUser.getUid())
       .get()
       .addOnCompleteListener(task -> {
         if (task.isSuccessful()) {
@@ -110,53 +137,121 @@ public class MapFragment extends Fragment {
               incidents.add(incident);
             }
           }
-          addMarkers(incidents);
+          addMarkers(incidents, true);
         }
       });
   }
 
   /**
-   * Añade marcadores al mapa para cada incidente recibido.
-   * Configura posición, título, icono, y listener de click para cada marcador.
-   *
-   * @param incidents Lista de incidentes para mostrar en el mapa.
+   * Carga las incidencias de otros usuarios y añade marcadores con sus avatares.
    */
-  private void addMarkers(List<Incident> incidents) {
+  private void loadOtherUsersIncidentsAndAddMarkers() {
+    if (currentUser == null) return;
+
+    FirebaseFirestore.getInstance()
+      .collection("incidents")
+      .whereNotEqualTo("user_id", currentUser.getUid())
+      .get()
+      .addOnCompleteListener(task -> {
+        if (task.isSuccessful()) {
+          List<Incident> incidents = new ArrayList<>();
+          QuerySnapshot querySnapshot = task.getResult();
+          if (querySnapshot != null) {
+            for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+              Incident incident = document.toObject(Incident.class);
+              incidents.add(incident);
+            }
+          }
+          addMarkers(incidents, false);
+        }
+      });
+  }
+
+  /**
+   * Añade marcadores al mapa para cada incidente.
+   * @param incidents Lista de incidentes.
+   * @param isCurrentUser Si los incidentes son del usuario actual.
+   */
+  private void addMarkers(List<Incident> incidents, boolean isCurrentUser) {
     for (Incident inc : incidents) {
       double[] coords = parseLatLon(inc.getLocalitation());
       if (coords.length == 2) {
-        Marker marker = new Marker(map);
-        marker.setPosition(new GeoPoint(coords[0], coords[1]));
-        marker.setTitle(inc.getIncidentType());
-        marker.setIcon(getMarkerIconByStatus(inc.getStatus()));
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setRelatedObject(inc);
+        GeoPoint point = new GeoPoint(coords[0], coords[1]);
 
-        marker.setOnMarkerClickListener((m, mapView) -> {
-          Bundle bundle = new Bundle();
-          Incident incident = (Incident) m.getRelatedObject();
-          bundle.putString("incident_id", incident.getUid());
+        if (isCurrentUser) {
+          Marker marker = new Marker(map);
+          marker.setPosition(point);
+          marker.setTitle(inc.getIncidentType());
+          marker.setIcon(getMarkerIconByStatus(inc.getStatus()));
+          marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+          marker.setRelatedObject(inc);
 
-          NavController navController = NavHostFragment.findNavController(this);
-          navController.navigate(R.id.nav_checkIncident, bundle);
+          marker.setOnMarkerClickListener((m, mapView) -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("incident_id", inc.getUid());
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.nav_checkIncident, bundle);
+            return true;
+          });
 
-          return true;
-        });
-        map.getOverlays().add(marker);
+          map.getOverlays().add(marker);
+        } else {
+          FirebaseFirestore.getInstance().collection("users")
+            .document(inc.getUserId())
+            .get()
+            .addOnSuccessListener(userDoc -> {
+              if (userDoc.exists()) {
+                String avatarUrl = userDoc.getString("avatar");
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                  setAvatarMarker(avatarUrl, point, inc);
+                }
+              }
+            });
+        }
       }
     }
     map.invalidate();
   }
 
   /**
-   * Parsea una cadena de texto con formato "lat: <valor>, lon: <valor>"
-   * y devuelve un array con la latitud y longitud como double.
-   *
-   * @param localitation Cadena con la ubicación en formato esperado.
-   * @return Array de dos posiciones: [latitud, longitud], o null si falla el parseo.
+   * Descarga y aplica el avatar circular como icono del marcador.
+   */
+  private void setAvatarMarker(String avatarUrl, GeoPoint position, Incident incident) {
+    Glide.with(requireContext())
+      .asBitmap()
+      .load(avatarUrl)
+      .circleCrop()
+      .into(new CustomTarget<Bitmap>(100, 100) {
+        @Override
+        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+          Marker marker = new Marker(map);
+          marker.setPosition(position);
+          marker.setIcon(new BitmapDrawable(getResources(), resource));
+          marker.setTitle(incident.getIncidentType());
+          marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+          marker.setRelatedObject(incident);
+
+          marker.setOnMarkerClickListener((m, mapView) -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("incident_id", incident.getUid());
+            NavController navController = NavHostFragment.findNavController(MapFragment.this);
+            navController.navigate(R.id.nav_checkIncident, bundle);
+            return true;
+          });
+
+          map.getOverlays().add(marker);
+          map.invalidate();
+        }
+
+        @Override
+        public void onLoadCleared(@Nullable Drawable placeholder) {}
+      });
+  }
+
+  /**
+   * Parsea una cadena "lat: <val>, lon: <val>" y devuelve un array [lat, lon].
    */
   private double[] parseLatLon(String localitation) {
-
     try {
       String[] parts = localitation.split(",");
       String latPart = parts[0].trim();
@@ -170,27 +265,24 @@ public class MapFragment extends Fragment {
       e.printStackTrace();
       return new double[0];
     }
-
   }
 
   /**
-   * Obtiene la ubicación inicial del usuario usando FusedLocationProviderClient.
-   * Si no se dispone de permiso o ubicación, centra el mapa en una ubicación por defecto.
+   * Centra el mapa en la ubicación inicial del usuario si se permiten permisos.
    */
   private void firstLocalitation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
     if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-      fusedLocationClient.getLastLocation()
-        .addOnSuccessListener(location -> {
-          if (location != null) {
-            map.getController().setZoom(15.0);
-            map.getController().setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
-          } else {
-            map.getController().setZoom(10.0);
-            map.getController().setCenter(new GeoPoint(40.4168, -3.7038));
-          }
-        });
+      fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+        if (location != null) {
+          map.getController().setZoom(15.0);
+          map.getController().setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
+        } else {
+          map.getController().setZoom(10.0);
+          map.getController().setCenter(new GeoPoint(40.4168, -3.7038));
+        }
+      });
     } else {
       map.getController().setZoom(10.0);
       map.getController().setCenter(new GeoPoint(40.4168, -3.7038));
@@ -198,10 +290,7 @@ public class MapFragment extends Fragment {
   }
 
   /**
-   * Devuelve un icono Drawable para el marcador según el estado del incidente.
-   *
-   * @param status Estado del incidente (ej. "pendiente", "en proceso", "resuelta").
-   * @return Drawable con el icono correspondiente.
+   * Devuelve un icono diferente según el estado del incidente.
    */
   private Drawable getMarkerIconByStatus(String status) {
     switch (status.toLowerCase()) {
