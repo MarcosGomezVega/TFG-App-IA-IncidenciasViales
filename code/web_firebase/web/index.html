@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel de Incidencias</title>
+  <style>
+    /* Estilos generales para la página */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    /* Estilos de tabla */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    th {
+      cursor: pointer;
+      background-color: #f2f2f2;
+    }
+
+    /* Controlador para redimensionar columnas */
+    th .resizer {
+      width: 5px;
+      height: 100%;
+      position: absolute;
+      right: 0;
+      top: 0;
+      cursor: col-resize;
+      user-select: none;
+    }
+
+    select {
+      padding: 4px;
+    }
+
+    /* Miniaturas de fotos */
+    .foto-img {
+      width: 60px;
+      height: auto;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Modal para mostrar imagen ampliada */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+
+    .modal-content {
+      margin: 10% auto;
+      display: block;
+      max-width: 80%;
+      max-height: 80%;
+      border: 4px solid #fff;
+      border-radius: 8px;
+    }
+
+    .modal-close {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 30px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+    }
+
+    .modal-close:hover {
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Panel de Incidencias</h1>
+
+  <!-- Tabla principal -->
+  <table>
+    <thead>
+      <tr>
+        <th data-key="id">ID</th>
+        <th data-key="email">Email</th>
+        <th data-key="localitation">Calle</th>
+        <th data-key="coords">Coordenadas</th>
+        <th data-key="incident_type">Tipo</th>
+        <th data-key="date">Fecha</th>
+        <th>Foto</th>
+        <th data-key="status">Estado</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <!-- Modal de imagen -->
+  <div id="image-modal" class="modal">
+    <span class="modal-close" id="modal-close">&times;</span>
+    <img class="modal-content" id="modal-img" />
+  </div>
+
+  <script type="module">
+    // Importación de SDK de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    /**
+     * Configuración de Firebase.
+     * @constant
+     */
+    const firebaseConfig = {
+      apiKey: "AIzaSyB3wFHzZVFkOHClm8-qlB4QbkBn6SIbfEM",
+      authDomain: "app-deteccion-incidencias-ia.firebaseapp.com",
+      projectId: "app-deteccion-incidencias-ia",
+      storageBucket: "app-deteccion-incidencias-ia.appspot.com",
+      messagingSenderId: "934980339087",
+      appId: "1:934980339087:web:7314db7ec9f3bea88577fa",
+      measurementId: "G-G1X1SW7KRD"
+    };
+
+    // Inicialización de Firebase y Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    /** Lista de estados válidos para las incidencias */
+    const statuses = ["Pendiente", "En proceso", "Resuelta"];
+
+    /** Almacena todas las incidencias obtenidas */
+    let incidentes = [];
+
+    /** Objeto que guarda la clave y el orden actual de la tabla */
+    let ordenActual = { key: null, asc: true };
+
+    /**
+     * Carga datos desde Firestore y los muestra en la tabla.
+     * Asocia correos electrónicos de usuarios a las incidencias.
+     * @async
+     */
+    async function cargarDatos() {
+      const [incidentSnap, usersSnap] = await Promise.all([
+        getDocs(collection(db, "incidents")),
+        getDocs(collection(db, "users"))
+      ]);
+
+      const users = {};
+      usersSnap.forEach(user => {
+        users[user.id] = user.data().email || "Sin email";
+      });
+
+      incidentes = [];
+      incidentSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        incidentes.push({
+          id: docSnap.id,
+          email: users[data.user_id] || "Desconocido",
+          localitation: data.localitation || "N/A",
+          coords: data.coordinates || "N/A",
+          incident_type: data.incident_type || "N/A",
+          date: data.date || "N/A",
+          photo: data.photo || "",
+          status: data.status || "Pendiente"
+        });
+      });
+
+      renderTabla(incidentes);
+      makeColumnsResizable();
+    }
+
+    /**
+     * Renderiza las filas de la tabla HTML a partir de los datos.
+     * Incluye imágenes, menús de estado y acciones de clic.
+     *
+     * @param {Array<Object>} data - Lista de incidencias.
+     */
+    function renderTabla(data) {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      data.forEach((item) => {
+        const tr = document.createElement("tr");
+
+        const tdPhoto = document.createElement("td");
+        if (item.photo) {
+          const img = document.createElement("img");
+          img.src = item.photo;
+          img.alt = "Foto incidencia";
+          img.className = "foto-img";
+          img.addEventListener("click", () => mostrarImagen(item.photo));
+          tdPhoto.appendChild(img);
+        } else {
+          tdPhoto.textContent = "Sin foto";
+        }
+
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.email}</td>
+          <td>${item.localitation}</td>
+          <td>${item.coords}</td>
+          <td>${item.incident_type}</td>
+          <td>${item.date}</td>
+        `;
+        tr.appendChild(tdPhoto);
+
+        const tdStatus = document.createElement("td");
+        const select = document.createElement("select");
+
+        statuses.forEach(status => {
+          const option = document.createElement("option");
+          option.value = status;
+          option.textContent = status;
+          if (status === item.status) option.selected = true;
+          select.appendChild(option);
+        });
+
+        select.addEventListener("change", async () => {
+          await updateDoc(doc(db, "incidents", item.id), {
+            status: select.value
+          });
+          alert(`Estado actualizado a "${select.value}"`);
+        });
+
+        tdStatus.appendChild(select);
+        tr.appendChild(tdStatus);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    /**
+     * Muestra una imagen en un modal ampliado al hacer clic en una miniatura.
+     *
+     * @param {string} src - URL de la imagen a mostrar.
+     */
+    function mostrarImagen(src) {
+      const modal = document.getElementById("image-modal");
+      const modalImg = document.getElementById("modal-img");
+      modalImg.src = src;
+      modal.style.display = "block";
+    }
+
+    /**
+     * Cierra el modal cuando se hace clic en la "X".
+     */
+    document.getElementById("modal-close").onclick = function () {
+      document.getElementById("image-modal").style.display = "none";
+    };
+
+    /**
+     * Cierra el modal si el usuario hace clic fuera del contenido de la imagen.
+     */
+    window.addEventListener("click", function (event) {
+      const modal = document.getElementById("image-modal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    /**
+     * Ordena la tabla por la clave seleccionada, alternando entre ascendente y descendente.
+     *
+     * @param {string} key - Clave del campo por el que se ordena.
+     */
+    function ordenarPor(key) {
+      if (ordenActual.key === key) {
+        ordenActual.asc = !ordenActual.asc;
+      } else {
+        ordenActual = { key, asc: true };
+      }
+
+      incidentes.sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+
+        if (key === "date") {
+          valA = new Date(valA);
+          valB = new Date(valB);
+        }
+
+        if (valA < valB) return ordenActual.asc ? -1 : 1;
+        if (valA > valB) return ordenActual.asc ? 1 : -1;
+        return 0;
+      });
+
+      renderTabla(incidentes);
+    }
+
+    /**
+     * Permite redimensionar las columnas de la tabla arrastrando los bordes.
+     */
+    function makeColumnsResizable() {
+      const thElements = document.querySelectorAll("thead th");
+      thElements.forEach((th, index) => {
+        const resizer = document.createElement("div");
+        resizer.className = "resizer";
+        th.appendChild(resizer);
+
+        let startX, startWidth;
+
+        resizer.addEventListener("mousedown", (e) => {
+          startX = e.pageX;
+          startWidth = th.offsetWidth;
+
+          function onMouseMove(e) {
+            const newWidth = startWidth + (e.pageX - startX);
+            th.style.width = newWidth + "px";
+            document.querySelectorAll(`tbody tr`).forEach(row => {
+              const cell = row.children[index];
+              if (cell) cell.style.width = newWidth + "px";
+            });
+          }
+
+          function onMouseUp() {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          }
+
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        });
+      });
+    }
+
+    /**
+     * Ejecuta la carga inicial de datos y configura los eventos de orden al cargar la página.
+     */
+    window.addEventListener("DOMContentLoaded", () => {
+      cargarDatos();
+
+      document.querySelectorAll("thead th").forEach(th => {
+        const key = th.getAttribute("data-key");
+        if (key) {
+          th.addEventListener("click", () => ordenarPor(key));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
