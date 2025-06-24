@@ -48,8 +48,6 @@ dependencies {
   implementation("androidx.navigation:navigation-ui:2.8.9")
   implementation("androidx.activity:activity-ktx:1.9.0")
 
-
-
   testImplementation("junit:junit:4.13.2")
   androidTestImplementation("androidx.test.ext:junit:1.2.1")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
@@ -62,7 +60,7 @@ dependencies {
   implementation("com.google.firebase:firebase-firestore:24.10.3")
   implementation("com.google.firebase:firebase-storage:20.2.1")
   implementation("com.google.firebase:firebase-messaging:20.2.1")
-
+  implementation("com.google.firebase:firebase-database: 20.2.1")
 
   implementation("org.osmdroid:osmdroid-android:6.1.16")
 
@@ -70,7 +68,9 @@ dependencies {
   implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
   implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")
 
-
   implementation("de.hdodenhof:circleimageview:3.1.0")
+
+  implementation("com.github.bumptech.glide:glide:4.16.0")
+  annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
 }

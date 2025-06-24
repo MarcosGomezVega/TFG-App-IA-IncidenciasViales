@@ -145,4 +145,13 @@
     <item>Spanish</item>
     <item>English</item>
   </string-array>
+
+  <string name="info_label_version">Version: </string>
+  <string name="info_value_version">1.1.0</string>
+  <string name="info_label_developer">Developer: </string>
+  <string name="info_value_developer">Marcos Gómez Vega</string>
+  <string name="info_label_contact">Contact: </string>
+  <string name="info_value_contact">mgv1017@alu.ubu.es</string>
+  <string name="info_description">This app uses AI to detect different types of road incidents based on civil engineering standards, so that the municipality and authorities can be aware of these defects and fix them. You can also view a list of your reports, their status, and a map with incidents reported by other users.</string>
+
 </resources>
