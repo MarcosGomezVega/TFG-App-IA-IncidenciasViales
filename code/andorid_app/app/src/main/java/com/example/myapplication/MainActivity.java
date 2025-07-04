@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView = binding.navView;
 
     mAppBarConfiguration = new AppBarConfiguration.Builder(
-      R.id.nav_home, R.id.nav_Incidents, R.id.nav_map, R.id.nav_config, R.id.nav_share, R.id.nav_info)
+      R.id.nav_home, R.id.nav_Incidents, R.id.nav_map, R.id.nav_config, R.id.nav_share,R.id.nav_help, R.id.nav_info)
       .setOpenableLayout(drawer)
       .build();
 
