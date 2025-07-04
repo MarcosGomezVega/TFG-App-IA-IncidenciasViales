@@ -153,5 +153,23 @@
   <string name="info_label_contact">Contact: </string>
   <string name="info_value_contact">mgv1017@alu.ubu.es</string>
   <string name="info_description">This app uses AI to detect different types of road incidents based on civil engineering standards, so that the municipality and authorities can be aware of these defects and fix them. You can also view a list of your reports, their status, and a map with incidents reported by other users.</string>
+  <string name="terms_title">Terms and Conditions</string>
+  <string name="terms_point_1">1. Purpose of the Application: The app allows you to upload photos of urban defects, geolocate them, and classify the incident to notify local authorities.</string>
+  <string name="terms_point_2">2. Responsible Use: The user agrees to upload only real and current images, no offensive or false content, and not to use the app for illegal purposes.</string>
+  <string name="terms_point_3">3. Geolocation: It is used only to correctly position the incident. This information is not shared with third parties except local authorities.</string>
+  <string name="terms_point_4">4. Intellectual Property: Uploaded images may be used for informational and statistical purposes. The user grants a free, non-exclusive, perpetual license.</string>
+  <string name="terms_point_5">5. Disclaimer: The app acts as an intermediary. It does not guarantee that authorities will address every report.</string>
+  <string name="terms_point_6">6. Modifications: These terms may change. Updates will be available in the app.</string>
+  <string name="description_title">App Description</string>
+
+
+  <string name="toast_google_change_email_or_paswword_not_supported">You can\'t change your email or your password if you signed in with Google.</string>
+  <string name="toast_verify_new_email">Please verify your new email to complete the change. A verification email has been sent.</string>
+  <string name="toast_error_send_verification">Failed to send verification email.</string>
+  <string name="toast_reauth_failed">Reauthentication failed. Please check your password.</string>
+  <string name="nav_help">Help</string>
+
+
+
 
 </resources>

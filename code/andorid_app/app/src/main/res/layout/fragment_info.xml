@@ -23,8 +23,7 @@
       android:layout_marginTop="8dp"
       android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      >
+      android:layout_height="wrap_content">
 
       <TextView
         android:text="@string/info_label_version"
@@ -86,12 +85,87 @@
     </LinearLayout>
 
     <TextView
+      android:text="@string/description_title"
+      android:textSize="18dp"
+      android:textStyle="bold"
+      android:textColor="@color/black"
+      android:layout_marginTop="24dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
       android:text="@string/info_description"
       android:layout_marginTop="16dp"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:paddingStart="16dp"
       android:textColor="@color/black"
       android:textSize="16dp"/>
+
+
+    <TextView
+      android:text="@string/terms_title"
+      android:textSize="18dp"
+      android:textStyle="bold"
+      android:textColor="@color/black"
+      android:layout_marginTop="24dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+
+    <TextView
+      android:text="@string/terms_point_1"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="12dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:text="@string/terms_point_2"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:text="@string/terms_point_3"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:text="@string/terms_point_4"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:text="@string/terms_point_5"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:text="@string/terms_point_6"
+      android:textSize="16sp"
+      android:textColor="@color/black"
+      android:paddingStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
 
     <ImageView
       android:src="@drawable/escudo_ubu_tc"

@@ -5,15 +5,24 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   tools:context=".ui.home.HomeFragment"
-  android:background="@color/primaryContainer">
+  android:background="@drawable/fondo_app2">
 
+
+  <View
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:background="@color/back_home"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
 
   <ImageView
     android:id="@+id/imagePreview"
     android:layout_width="300dp"
     android:layout_height="350dp"
     android:layout_marginStart="32dp"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="32dp"
     android:layout_marginEnd="32dp"
     android:scaleType="centerCrop"
     app:layout_constraintDimensionRatio="16:9"
@@ -36,9 +45,9 @@
       android:id="@+id/textDetectedType"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:hint="@string/type_incident_home"
+      android:text="@string/type_incident_home"
       android:padding="8dp"
-      android:textColor="@color/onPrimaryContainer"
+      android:textColor="@color/black"
       android:textSize="16sp"
       android:textStyle="bold"
       android:gravity="center"
@@ -56,10 +65,9 @@
       android:visibility="gone"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
-
+      app:layout_constraintTop_toTopOf="parent"
+      />
   </androidx.constraintlayout.widget.ConstraintLayout>
-
 
   <TextView
     android:id="@+id/textLocation"
@@ -69,8 +77,8 @@
     android:layout_marginTop="8dp"
     android:layout_marginEnd="16dp"
     android:gravity="center"
-    android:hint="@string/localization"
-    android:textColor="@color/onPrimaryContainer"
+    android:text="@string/localization"
+    android:textColor="@color/black"
     android:textSize="16sp"
     android:textStyle="bold"
     app:layout_constraintEnd_toEndOf="parent"
@@ -130,4 +138,5 @@
     app:layout_constraintHorizontal_bias="1.0"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/btnSendIncident" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -154,4 +154,25 @@
     <string name="info_label_contact">Contacto: </string>
     <string name="info_value_contact">mgv1017@alu.ubu.es</string>
     <string name="info_description"> Esta app permite detectar los distintos tipos de incidencias que hay en la vía según los estándares de los ingenieros de caminos mediante IA, para que el ayuntamiento y las autoridades puedan ser conscientes de estos desperfectos y arreglarlos. Además, puedes ver el listado de tus incidencias, su estado y un mapa con las incidencias reportadas por otros usuarios.</string>
+    <string name="terms_title">Términos y Condiciones</string>
+    <string name="terms_point_1">1. Propósito de la aplicación: La app permite subir fotos de desperfectos urbanos, geolocalizarlos y clasificarlos para notificar a las autoridades locales.</string>
+    <string name="terms_point_2">2. Uso responsable: El usuario acepta subir solo imágenes reales y actuales, sin contenido ofensivo ni falso, y no usar la app con fines ilegales.</string>
+    <string name="terms_point_3">3. Geolocalización: Se usa únicamente para posicionar correctamente la incidencia. Esta información no se comparte con terceros salvo las autoridades locales.</string>
+    <string name="terms_point_4">4. Propiedad intelectual: Las imágenes subidas pueden usarse con fines informativos y estadísticos. El usuario concede una licencia gratuita, no exclusiva y perpetua.</string>
+    <string name="terms_point_5">5. Exención de responsabilidad: La app actúa como intermediaria. No garantiza que las autoridades atiendan todas las incidencias reportadas.</string>
+    <string name="terms_point_6">6. Modificaciones: Estos términos pueden cambiar. Las actualizaciones estarán disponibles en la app.</string>
+    <string name="description_title">Descripcion de la App</string>
+
+
+    <string name="toast_google_change_email_or_paswword_not_supported">No puedes cambiar tu correo o contraseña si iniciaste sesión con Google.</string>
+    <string name="toast_verify_new_email">Verifica el nuevo correo para completar el cambio. Se ha enviado un correo de verificación.</string>
+    <string name="toast_error_send_verification">Error al enviar el correo de verificación.</string>
+    <string name="toast_reauth_failed">La reautenticación ha fallado. Verifica tu contraseña.</string>
+
+
+  <string name="nav_help">Ayuda</string>
+
+
+
+
 </resources>
