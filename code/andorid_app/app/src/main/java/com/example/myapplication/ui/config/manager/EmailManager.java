@@ -12,6 +12,9 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
+
+import java.util.List;
 
 public class EmailManager {
   private final Context context;
@@ -24,7 +27,7 @@ public class EmailManager {
 
   /**
    * Muestra un diálogo personalizado para que el usuario pueda cambiar su correo electrónico.
-   * Incluye validaciones básicas y la acción para cambiar el correo.
+   * Incluye validaciones básicas y llama al método de lógica de cambio de correo.
    */
   public void showChangeEmailDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.CustomAlertDialog);
@@ -43,6 +46,7 @@ public class EmailManager {
     builder.setNegativeButton(context.getString(R.string.button_cancel), (dialog, which) -> dialog.dismiss());
     builder.create().show();
   }
+
   /**
    * Gestiona la lógica para cambiar el correo electrónico del usuario,
    * realizando validaciones y autenticación antes de actualizar.
@@ -52,7 +56,9 @@ public class EmailManager {
    * @param edtConfirmNewEmail Campo para confirmar el nuevo correo.
    * @param edtPassword        Campo para la contraseña actual.
    */
-  private void pushBtnChangeEmail(EditText edtCurrentEmail, EditText edtNewEmail, EditText edtConfirmNewEmail, EditText edtPassword) {
+  private void pushBtnChangeEmail(EditText edtCurrentEmail, EditText edtNewEmail,
+                                  EditText edtConfirmNewEmail, EditText edtPassword) {
+
     String currentEmail = edtCurrentEmail.getText().toString().trim();
     String newEmail = edtNewEmail.getText().toString().trim();
     String confirmNewEmail = edtConfirmNewEmail.getText().toString().trim();
@@ -76,18 +82,17 @@ public class EmailManager {
     }
 
     AuthCredential credential = EmailAuthProvider.getCredential(currentEmail, password);
-
     user.reauthenticate(credential).addOnCompleteListener(task -> {
       if (task.isSuccessful()) {
         user.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(updateTask -> {
           if (updateTask.isSuccessful()) {
-            Toast.makeText(context, "Verifica el nuevo correo para completar el cambio, se habrá enviado un correo al nuevo email.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, context.getString(R.string.toast_verify_new_email), Toast.LENGTH_LONG).show();
           } else {
-            Toast.makeText(context, "Error al enviar verificación", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.toast_error_send_verification), Toast.LENGTH_SHORT).show();
           }
         });
       } else {
-        Toast.makeText(context, "Reautenticación fallida", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, context.getString(R.string.toast_reauth_failed), Toast.LENGTH_SHORT).show();
       }
     });
   }
