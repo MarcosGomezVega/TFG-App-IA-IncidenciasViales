@@ -1,0 +1,12 @@
+0     - Cara humana  
+D00   - Grieta longitudinal en zona de rodadura  
+D40   - Deformaciones y desprendimientos 
+1     - Sin incidencia  
+D50   - 
+D20   - Grieta piel de cocodrilo 
+D10   - Grieta transversal de intervalo regular  
+D44   - Señalización horizontal deteriorada 
+Repair - Zona reparada  
+D43   - Señalización horizontal deteriorada 
+D01   - Grieta longitudinal en junta de construcción  
+D11   - Grieta transversal en junta de construcción  
