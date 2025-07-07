@@ -152,7 +152,7 @@ public class HomeFragment extends Fragment {
     imageViewLocalizacion = root.findViewById(R.id.textLocation);
     spinnerIncidentType = root.findViewById(R.id.spinnerIncidentType);
 
-    String[] clases = {"Selecione una incidencia ...", "Grieta", "Agujero", "Poste caído", "Sin incidencia"};
+    String[] clases = requireContext().getResources().getStringArray(R.array.incidents_array);
 
     setupSpinner(clases);
     setupActivityLauncher(clases);
@@ -343,15 +343,13 @@ public class HomeFragment extends Fragment {
       return;
     }
 
-    /**
-     *
-     *
-     if (incidentType.equals("Sin incidencia")) {
-     Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
-     return;
-     }
-     
-     */
+
+    if (incidentType.equals("Sin incidencia ")) {
+      Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+
     uploadImageToFirebaseStorage(incidentType, localitation, date, status, incidentPercentage);
 
     spinnerIncidentType.setVisibility(View.GONE);
@@ -398,16 +396,16 @@ public class HomeFragment extends Fragment {
           double lat = location.getLatitude();
           double lon = location.getLongitude();
 
-          // Geocodificación inversa: obtener dirección
+
           Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
           try {
             List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
             if (addresses != null && !addresses.isEmpty()) {
               Address address = addresses.get(0);
 
-              String street = address.getThoroughfare();  // Calle
-              String city = address.getLocality();         // Ciudad
-              String country = address.getCountryName();   // País
+              String street = address.getThoroughfare();
+              String city = address.getLocality();
+              String country = address.getCountryName();
 
               // Fallbacks si algo es null
               if (street == null) street = address.getAddressLine(0);
@@ -419,8 +417,8 @@ public class HomeFragment extends Fragment {
               if (!city.isEmpty()) fullAddress += ", " + city;
               if (!country.isEmpty()) fullAddress += ", " + country;
 
-              imageViewLocalizacion.setText(fullAddress); // Mostrar dirección completa
-              imageViewLocalizacion.setTag(new double[]{lat, lon}); // Guardar coordenadas
+              imageViewLocalizacion.setText(fullAddress);
+              imageViewLocalizacion.setTag(new double[]{lat, lon});
             } else {
               imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
             }
@@ -459,7 +457,7 @@ public class HomeFragment extends Fragment {
       float[][][][] input = preprocessBitmap(scaledBitmap);
 
       float[][] bboxOutput = new float[1][4];
-      float[][] classOutput = new float[1][12]; // <-- modelo devuelve 12 probabilidades
+      float[][] classOutput = new float[1][12];
 
       Map<Integer, Object> outputMap = new HashMap<>();
       outputMap.put(1, bboxOutput);
@@ -499,6 +497,7 @@ public class HomeFragment extends Fragment {
 
     return confidencePercentage;
   }
+
   /**
    * Recorta un bitmap usando las coordenadas del bounding box normalizadas (0 a 1).
    *

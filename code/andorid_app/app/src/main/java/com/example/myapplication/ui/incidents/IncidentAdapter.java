@@ -96,10 +96,10 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
   /**
    * Traduce el tipo de incidente al inglés si el idioma actual es inglés.
-   * Usa las preferencias guardadas o, si no existen, el idioma del sistema.
+   * Usa las preferencias guardadas o el idioma del sistema.
    *
-   * @param type Tipo de incidente en texto.
-   * @return Tipo de incidente traducido si corresponde, o el mismo texto si no se necesita traducir.
+   * @param type Tipo de incidente (texto).
+   * @param callback Callback con el resultado traducido.
    */
   public void translateIncidentType(String type, OnTranslationReady callback) {
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -115,56 +115,70 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
 
           if (task.isSuccessful()) {
             DocumentSnapshot document = task.getResult();
-            if (document.exists()) {
-              lang = document.getString("language");
-              Log.d("TranslateIncident", "Idioma desde Firestore: " + lang);
-            } else {
-              Log.w("TranslateIncident", "Documento de usuario no encontrado.");
-              lang = null;
-            }
+            lang = document.exists() ? document.getString("language") : null;
           } else {
-            Log.e("TranslateIncident", "Error al obtener idioma: ", task.getException());
             lang = null;
           }
 
           if (lang == null) {
-            Locale systemLocale = Locale.getDefault();
-            lang = systemLocale.getLanguage();
-            Log.d("TranslateIncident", "Idioma por defecto del sistema: " + lang);
+            lang = Locale.getDefault().getLanguage();
           }
 
           boolean isEnglish = lang.equals("en");
-
           String translatedType;
+
           if (!isEnglish) {
             translatedType = type;
-            Log.d("TranslateIncident", "No se traduce porque idioma es: " + lang);
           } else {
-            switch (type.toLowerCase()) {
-              case "grieta":
-                translatedType = "Crack";
+            switch (type.toLowerCase(Locale.ROOT)) {
+              case "humano":
+                translatedType = "Human";
                 break;
-              case "agujero":
-                translatedType = "Pothole";
+              case "grieta longitudinal en zona de rodadura":
+                translatedType = "Longitudinal crack in wheel path";
                 break;
-              case "poste caido":
-                translatedType = "Fallen pole";
+              case "grieta longitudinal en junta de construcción":
+                translatedType = "Longitudinal crack in construction joint";
+                break;
+              case "grieta transversal de intervalo regular":
+                translatedType = "Transverse crack at regular intervals";
+                break;
+              case "grieta transversal en junta de construcción":
+                translatedType = "Transverse crack in construction joint";
+                break;
+              case "grieta piel de cocodrilo":
+                translatedType = "Alligator crack";
+                break;
+              case "deformaciones y desprendimientos":
+                translatedType = "Deformations and displacements";
+                break;
+              case "alcantarillas":
+                translatedType = "Manholes";
+                break;
+              case "señalización horizontal deteriorada":
+                translatedType = "Damaged road marking";
+                break;
+              case "zona reparada":
+                translatedType = "Repaired area";
                 break;
               case "sin incidencia":
                 translatedType = "No incident";
                 break;
               default:
                 translatedType = type;
+                break;
             }
-            Log.d("TranslateIncident", "Tipo traducido: " + translatedType);
           }
 
           callback.onTranslated(translatedType);
         });
+
     } else {
       Log.e("TranslateIncident", "Usuario no autenticado");
+      callback.onTranslated(type);
     }
   }
+
 
   public interface OnTranslationReady {
 

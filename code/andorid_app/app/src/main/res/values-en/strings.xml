@@ -169,6 +169,72 @@
   <string name="toast_reauth_failed">Reauthentication failed. Please check your password.</string>
   <string name="nav_help">Help</string>
 
+  <string-array name="incidents_array">
+    <item>Select an incident ...</item>
+
+    <item>Deformations and displacements</item>
+    <item>Settlement</item>
+    <item>Soft spots</item>
+    <item>Wavy pavement</item>
+    <item>Bumps</item>
+    <item>Stepping</item>
+    <item>Pothole</item>
+
+    <item>Longitudinal crack</item>
+    <item>Longitudinal crack on construction joint</item>
+    <item>Transverse crack</item>
+    <item>Transverse crack on construction joint</item>
+    <item>Alligator cracking</item>
+
+    <item>Manholes</item>
+    <item>Deteriorated road markings</item>
+  </string-array>
+
+
+  <string name="title_deformaciones">Deformations and Detachment</string>
+  <string name="title_roturas">Cracks</string>
+  <string name="title_otras">Other Issues</string>
+
+  <string name="item_hundimiento">Settlement</string>
+  <string name="desc_hundimiento">Localized depression or sinking in the pavement caused by settlements or lack of support.</string>
+
+  <string name="item_blandones">Soft Spots</string>
+  <string name="desc_blandones">Soft areas in the pavement that may sink under load due to failures in the base or subgrade.</string>
+
+  <string name="item_firme_ondulado">Wavy Pavement</string>
+  <string name="desc_firme_ondulado">Visible undulations on the pavement surface affecting driving comfort.</string>
+
+  <string name="item_protuberancias">Bumps</string>
+  <string name="desc_protuberancias">Localized elevations in the pavement, often caused by roots or internal deformations.</string>
+
+  <string name="item_escalonamiento">Step Faulting</string>
+  <string name="desc_escalonamiento">Difference in elevation between adjacent surfaces, usually at joints or repairs.</string>
+
+  <string name="item_agujero">Pothole</string>
+  <string name="desc_agujero">Hole or cavity formed in the pavement due to detachment or severe wear.</string>
+
+  <string name="item_grieta_longitudinal">Longitudinal Crack</string>
+  <string name="desc_grieta_longitudinal">Crack running parallel to the road axis caused by internal stresses or deformations.</string>
+
+  <string name="item_grieta_longitud_junta">Longitudinal Crack at Construction Joint</string>
+  <string name="desc_grieta_longitud_junta">Crack appearing along the joint where two pavements built at different times meet.</string>
+
+  <string name="item_grieta_transversal">Transverse Crack</string>
+  <string name="desc_grieta_transversal">Crack perpendicular to the road axis caused by thermal movements or differential settlements.</string>
+
+  <string name="item_grieta_cocodrilo">Alligator Cracking</string>
+  <string name="desc_grieta_cocodrilo">A set of interconnected cracks forming a pattern similar to alligator skin. It typically indicates structural fatigue in the lower pavement layers.</string>
+  <string name="item_grieta_longitud_fisura">Longitudinal Crack in Longitudinal Fissure</string>
+  <string name="desc_grieta_longitud_fisura">Secondary longitudinal crack developing within a primary fissure.</string>
+
+  <string name="item_alcantarillas">Culverts</string>
+  <string name="desc_alcantarillas">Structures for rainwater drainage that may have damage or blockages.</string>
+
+  <string name="item_senalizacion">Worn Horizontal Road Markings</string>
+  <string name="desc_senalizacion">Wear or disappearance of road markings on the pavement affecting road safety.</string>
+
+  <string name="title_help">Help</string>
+  <string name="desc_help">This section is intended to help you correctly identify the type of incident. Since the AI model is still in beta and may not be completely reliable, we recommend selecting the incident manually if you\'re confident about it. Below are examples of the types of incidents you may encounter.</string>
 
 
 
