@@ -100,6 +100,7 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
    *
    * @param type Tipo de incidente (texto).
    * @param callback Callback con el resultado traducido.
+
    */
   public void translateIncidentType(String type, OnTranslationReady callback) {
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -117,6 +118,7 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
             DocumentSnapshot document = task.getResult();
             lang = document.exists() ? document.getString("language") : null;
           } else {
+
             lang = null;
           }
 
@@ -160,6 +162,7 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
                 break;
               case "zona reparada":
                 translatedType = "Repaired area";
+
                 break;
               case "sin incidencia":
                 translatedType = "No incident";
@@ -168,6 +171,7 @@ public class IncidentAdapter extends RecyclerView.Adapter<IncidentAdapter.Incide
                 translatedType = type;
                 break;
             }
+
           }
 
           callback.onTranslated(translatedType);

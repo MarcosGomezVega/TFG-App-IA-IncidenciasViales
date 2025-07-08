@@ -3,6 +3,7 @@ const {logger} = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
+
 // Diccionario de traducciones
 const translations = {
   es: {
@@ -14,6 +15,7 @@ const translations = {
     body: (status) => `The status of an incident changed to: ${status}`,
   },
 };
+
 
 exports.onIncidentStatusChange = onDocumentUpdated(
     {
@@ -36,6 +38,7 @@ exports.onIncidentStatusChange = onDocumentUpdated(
           logger.warn(`No se encontró uid en el incidente ${incidentId}`);
           return;
         }
+
 
         logger.info(
             `Status del incidente ${incidentId} 
@@ -60,6 +63,7 @@ exports.onIncidentStatusChange = onDocumentUpdated(
           // Obtener tokens del usuario
           const tokensSnapshot = await admin
               .firestore()
+
               .collection("device_tokens")
               .where("userId", "==", uid)
               .where("notification_activated", "==", true)
@@ -79,18 +83,24 @@ exports.onIncidentStatusChange = onDocumentUpdated(
             return;
           }
 
+
+
           logger.info(`Tokens a los que se enviará la notificación: ${tokens}`);
 
           const message = {
             notification: {
+
               title: translation.title,
               body: translation.body(after.status),
+
             },
             tokens: tokens,
           };
 
+
           const response = await admin.messaging()
               .sendEachForMulticast(message);
+
           logger.info("Notificación enviada con éxito:", response);
         } catch (error) {
           logger.error("Error enviando notificación:", error);

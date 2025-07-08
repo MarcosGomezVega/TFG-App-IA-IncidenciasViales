@@ -294,6 +294,7 @@ public class ConfigFragment extends Fragment {
       EmailManager emailManager = new EmailManager(requireContext(), getLayoutInflater());
       emailManager.showChangeEmailDialog();
     }
+
   }
 
   /**
@@ -305,6 +306,7 @@ public class ConfigFragment extends Fragment {
       PasswordManager passwordManager = new PasswordManager(requireContext(), getLayoutInflater());
       passwordManager.showChangePasswordDialog();
     }
+
 
   }
 

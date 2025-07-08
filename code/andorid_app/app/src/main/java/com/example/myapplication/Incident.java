@@ -67,4 +67,4 @@ public class Incident {
   }
 
   public String getCoordinates() {return coordinates;}
-}
+

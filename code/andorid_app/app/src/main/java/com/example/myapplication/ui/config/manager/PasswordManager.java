@@ -16,6 +16,7 @@ import com.google.firebase.auth.UserInfo;
 
 import java.util.List;
 
+
 public class PasswordManager {
 
   private final Context context;
@@ -45,6 +46,7 @@ public class PasswordManager {
     builder.setPositiveButton(context.getString(R.string.change), (dialog, which) ->
       pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword)
     );
+
     builder.setNegativeButton(context.getString(R.string.button_cancel), null);
 
     AlertDialog dialog = builder.create();
@@ -78,7 +80,6 @@ public class PasswordManager {
     }
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
     if (user == null || !user.getEmail().equals(email)) {
       Toast.makeText(context, context.getString(R.string.toast_current_email_not_match), Toast.LENGTH_SHORT).show();
       return;
@@ -99,5 +100,6 @@ public class PasswordManager {
         Toast.makeText(context, context.getString(R.string.toast_error_reauthenticating), Toast.LENGTH_SHORT).show();
       }
     });
+
   }
 }

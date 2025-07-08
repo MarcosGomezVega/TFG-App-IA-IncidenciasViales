@@ -60,7 +60,9 @@ dependencies {
   implementation("com.google.firebase:firebase-firestore:24.10.3")
   implementation("com.google.firebase:firebase-storage:20.2.1")
   implementation("com.google.firebase:firebase-messaging:20.2.1")
+
   implementation("com.google.firebase:firebase-database: 20.2.1")
+
 
   implementation("org.osmdroid:osmdroid-android:6.1.16")
 
@@ -72,5 +74,6 @@ dependencies {
 
   implementation("com.github.bumptech.glide:glide:4.16.0")
   annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
 
 }

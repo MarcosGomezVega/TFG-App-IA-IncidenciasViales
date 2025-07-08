@@ -146,7 +146,6 @@
     <item>Ingles</item>
   </string-array>
 
-
   <string name="info_label_version">Versión: </string>
   <string name="info_value_version">1.1.0</string>
   <string name="info_label_developer">Desarrollador: </string>

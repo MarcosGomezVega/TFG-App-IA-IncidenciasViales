@@ -32,6 +32,7 @@
       android:icon="@drawable/baseline_help_24"
       android:title="@string/nav_help"/>
     <item
+
       android:id="@+id/nav_info"
       android:icon="@drawable/info"
       android:title="@string/menu_info"/>

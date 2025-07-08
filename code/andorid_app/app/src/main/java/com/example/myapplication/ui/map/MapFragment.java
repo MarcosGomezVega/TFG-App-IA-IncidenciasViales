@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+
 import com.example.myapplication.Incident;
 import com.example.myapplication.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,6 +38,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapAdapter;
 import org.osmdroid.events.ZoomEvent;
+
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -49,9 +52,11 @@ import java.util.List;
  * Utiliza OpenStreetMap (osmdroid) para renderizar el mapa y Firebase Firestore para obtener datos.
  */
 public class MapFragment extends Fragment {
+
   private MapView map;
   private static final String TAG = "MapFragment";
   private FirebaseUser currentUser;
+
 
   @Nullable
   @Override
@@ -63,6 +68,7 @@ public class MapFragment extends Fragment {
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
     super.onViewCreated(view, savedInstanceState);
 
     SharedPreferences prefs = requireContext().getSharedPreferences("my_app_preferences", Context.MODE_PRIVATE);
@@ -71,7 +77,6 @@ public class MapFragment extends Fragment {
     map = view.findViewById(R.id.map_fragment);
     map.setTileSource(TileSourceFactory.MAPNIK);
     map.setMultiTouchControls(true);
-
     currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
     // Restaurar última posición del mapa si existe
@@ -120,6 +125,7 @@ public class MapFragment extends Fragment {
     FirebaseFirestore.getInstance()
       .collection("incidents")
       .whereEqualTo("user_id", currentUser.getUid())
+
       .get()
       .addOnCompleteListener(task -> {
         if (task.isSuccessful()) {
@@ -132,6 +138,7 @@ public class MapFragment extends Fragment {
             }
           }
           addMarkers(incidents, true);
+
         }
       });
   }
@@ -206,6 +213,7 @@ public class MapFragment extends Fragment {
               }
             });
         }
+
       }
     }
     map.invalidate();
@@ -254,6 +262,7 @@ public class MapFragment extends Fragment {
   }
 
   private double[] parseLatLon(String localitation) {
+
     try {
       String[] parts = localitation.split(",");
       String latPart = parts[0].trim();
@@ -267,7 +276,14 @@ public class MapFragment extends Fragment {
       e.printStackTrace();
       return new double[0];
     }
+
+
   }
+
+  /**
+   * Obtiene la ubicación inicial del usuario usando FusedLocationProviderClient.
+   * Si no se dispone de permiso o ubicación, centra el mapa en una ubicación por defecto.
+   */
 
   private void firstLocalitation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -282,12 +298,20 @@ public class MapFragment extends Fragment {
           map.getController().setCenter(new GeoPoint(40.4168, -3.7038));
         }
       });
+
     } else {
       map.getController().setZoom(10.0);
       map.getController().setCenter(new GeoPoint(40.4168, -3.7038));
     }
   }
 
+
+  /**
+   * Devuelve un icono Drawable para el marcador según el estado del incidente.
+   *
+   * @param status Estado del incidente (ej. "pendiente", "en proceso", "resuelta").
+   * @return Drawable con el icono correspondiente.
+   */
   private Drawable getMarkerIconByStatus(String status) {
     switch (status.toLowerCase()) {
       case "pendiente":

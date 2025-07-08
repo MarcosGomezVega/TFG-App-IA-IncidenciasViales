@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -62,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -257,6 +259,7 @@ public class HomeFragment extends Fragment {
         Boolean locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
         Boolean noticationGranted = result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
 
+
         if (Boolean.FALSE.equals(cameraGranted)) {
           Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
         }
@@ -343,11 +346,11 @@ public class HomeFragment extends Fragment {
       return;
     }
 
-
     if (incidentType.equals("Sin incidencia ")) {
       Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
       return;
     }
+
 
 
     uploadImageToFirebaseStorage(incidentType, localitation, date, status, incidentPercentage);
@@ -386,6 +389,7 @@ public class HomeFragment extends Fragment {
 
   /**
    * Obtiene la última ubicación del dispositivo y muestra la calle, ciudad y país en el TextView.
+
    */
   private void getLastLocation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -395,7 +399,6 @@ public class HomeFragment extends Fragment {
         if (location != null) {
           double lat = location.getLatitude();
           double lon = location.getLongitude();
-
 
           Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
           try {
@@ -427,6 +430,7 @@ public class HomeFragment extends Fragment {
             imageViewLocalizacion.setText(getString(R.string.error_having_location));
           }
 
+
         } else {
           imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
         }
@@ -437,7 +441,6 @@ public class HomeFragment extends Fragment {
       imageViewLocalizacion.setText(getString(R.string.permission_locattion_not_enable));
     }
   }
-
 
   /**
    * Predice el tipo de incidencia utilizando un modelo TensorFlow Lite y muestra el resultado con el porcentaje de confianza.
@@ -473,6 +476,7 @@ public class HomeFragment extends Fragment {
       String predictedClassCode = getClassCodeFromFile(getContext(), "clases_extraidas.txt", classIndex);
       incidentType = getClassDescriptionFromFile(getContext(), "clases_extraidas.txt", predictedClassCode);
 
+
       String result = incidentType + " " + confidencePercentage + "%";
       imageViewIncidentType.setText(result);
 
@@ -487,6 +491,7 @@ public class HomeFragment extends Fragment {
           saveCroppedImageToFirebase(croppedBitmap);
         }
       }
+
 
       return confidencePercentage;
 
@@ -619,6 +624,7 @@ public class HomeFragment extends Fragment {
 
 
   /**
+
    * Preprocesa el bitmap para adaptarlo al formato requerido por el modelo TensorFlow Lite.
    *
    * @param bitmap Imagen escalada a 224x224 píxeles.
@@ -684,6 +690,7 @@ public class HomeFragment extends Fragment {
    *
    * @param incidentType       Tipo de incidencia detectado o seleccionado.
    * @param localitation       Calle legible de la ubicación donde se detectó la incidencia.
+
    * @param imageUrl           Ruta local de la imagen capturada.
    * @param date               Fecha y hora del registro.
    * @param status             Estado inicial de la incidencia.
@@ -711,11 +718,11 @@ public class HomeFragment extends Fragment {
         incidentData.put("coordinates", coordString);
       }
 
+
       db.collection("incidents")
         .add(incidentData)
         .addOnSuccessListener(documentReference -> {
-          String incidentId = documentReference.getId();
-          documentReference.update("uid", incidentId)
+          String incidentId = documentReference.getId();)
             .addOnSuccessListener(aVoid ->
               Toast.makeText(getContext(), getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show()
             )
