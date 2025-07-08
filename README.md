@@ -58,46 +58,60 @@ Sigue estos pasos para configurar y ejecutar el proyecto correctamente:
 ## Estructura del proyecto
 
 ```text
-# TFG-App-IA-IncidenciasViales
+TFG-App-IA-IncidenciasViales/
 ├── CHANGELOG.md
 ├── README.md
-├── app/
-│   ├── app
-│   └── src
-│       ├── androidTest
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── example
-│       │   │           └── incidenciasviales
-│       │   └── res
-│       │       ├── drawable
-│       │       ├── layout
-│       │       ├── mipmap-anydpi
-│       │       ├── mipmap-hdpi
-│       │       ├── mipmap-mdpi
-│       │       ├── mipmap-xhdpi
-│       │       ├── mipmap-xxhdpi
-│       │       ├── mipmap-xxxhdpi
-│       │       ├── values
-│       │       ├── values-night
-│       │       └── xml
-│       └── test
-└── gradle
+├── code/
+│   ├── android_app/
+│   │   ├── gradle/
+│   │   └── app/
+│   │       └── src/
+│   │           ├── androidTest/
+│   │           ├── main/
+│   │           │   ├── java/
+│   │           │   │   └── com/
+│   │           │   │       └── example/
+│   │           │   │           └── incidenciasviales/
+│   │           │   ├── res/
+│   │           │   │   ├── drawable/
+│   │           │   │   ├── layout/
+│   │           │   │   ├── mipmap-anydpi/
+│   │           │   │   ├── mipmap-hdpi/
+│   │           │   │   ├── mipmap-mdpi/
+│   │           │   │   ├── mipmap-xhdpi/
+│   │           │   │   ├── mipmap-xxhdpi/
+│   │           │   │   ├── mipmap-xxxhdpi/
+│   │           │   │   ├── values/
+│   │           │   │   ├── values-night/
+│   │           │   │   └── xml/
+│   │           │   └── assets/
+│   │           │       ├── model_entrenado.tflite
+│   │           │       └── labels.txt
+│   │           └── test/
+│   ├── AI_model/
+│   ├── Firebase_funtions/
+│   └── web_service/
 └── docs/
-    ├── research
-    └──
+    ├── research/
+    └── TFG_memory/
+        
+
 ```
 
 ### Descripción de carpetas importantes:
 
-- **`app/src/main/java/com/example/incidenciasviales/`**: Contiene el código fuente principal de la aplicación, donde se implementa la lógica de negocio y las funcionalidades principales.
-- **`app/src/main/res/layout/`**: Contiene los archivos XML que definen las vistas y pantallas de la aplicación, especificando cómo se verá la interfaz de usuario.
-- **`app/src/main/res/drawable/`**: Almacena recursos gráficos como imágenes e íconos que se utilizan en la interfaz.
-- **`app/src/main/res/values/`**: Contiene recursos reutilizables como cadenas de texto, colores y estilos, que facilitan la personalización y consistencia visual.
-- **`app/src/main/res/mipmap-*`**: Contiene los íconos de la aplicación en diferentes resoluciones para adaptarse a distintos dispositivos.
-- **`app/src/androidTest/`** y **`app/src/test/`**: Incluyen pruebas instrumentadas y pruebas unitarias para garantizar el correcto funcionamiento de la aplicación.
-- **`docs/`**: Almacena documentación adicional, como investigaciones, guías o diagramas relacionados con el proyecto.
+
+- **`code/android_app/app/src/main/java/com/example/`**: Contiene el código fuente principal de la aplicación, donde se implementa la lógica de negocio y las funcionalidades principales.
+- **`code/android_app/app/src/main/res/layout/`**: Archivos XML que definen las vistas y pantallas de la aplicación, especificando cómo se verá la interfaz de usuario.
+- **`code/android_app/app/src/main/res/drawable/`**: Recursos gráficos como imágenes e íconos utilizados en la interfaz de usuario.
+- **`code/android_app/app/src/main/res/values/`**: Cadenas de texto, colores y estilos reutilizables para mantener una interfaz coherente.
+- **`code/android_app/app/src/main/res/mipmap-*/`**: Íconos de la aplicación en múltiples resoluciones para garantizar compatibilidad con distintos dispositivos Android.
+- **`code/android_app/app/src/androidTest/`** y **`code/android_app/app/src/test/`**: Incluyen pruebas instrumentadas y pruebas unitarias para verificar el correcto funcionamiento de la aplicación.
+- **`docs/`**: Almacena documentación técnica y académica del proyecto, como investigaciones, diagramas y la memoria del TFG.
+- **`code/AI_model/`**: Contiene los scripts y recursos necesarios para entrenar y convertir el modelo de inteligencia artificial a formato TensorFlow Lite.
+- **`code/Firebase_funtions/`**: Código para implementar funciones en la nube que gestionan el envío de notificaciones cuando cambia el estado de una incidencia.
+- **`code/web_service/`**: Contiene la lógica del sitio web desde el cual se pueden visualizar y actualizar las incidencias reportadas.
+
 
 ---
 
