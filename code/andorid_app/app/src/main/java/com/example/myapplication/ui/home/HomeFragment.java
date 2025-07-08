@@ -1,7 +1,17 @@
 package com.example.myapplication.ui.home;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,11 +52,18 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -137,7 +154,7 @@ public class HomeFragment extends Fragment {
     imageViewLocalizacion = root.findViewById(R.id.textLocation);
     spinnerIncidentType = root.findViewById(R.id.spinnerIncidentType);
 
-    String[] clases = {"Selecione una incidencia ...", "Grieta", "Agujero", "Poste caído", "Sin incidencia"};
+    String[] clases = requireContext().getResources().getStringArray(R.array.incidents_array);
 
     setupSpinner(clases);
     setupActivityLauncher(clases);
@@ -240,7 +257,8 @@ public class HomeFragment extends Fragment {
       registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
         Boolean cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
         Boolean locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-        Boolean noticationGranted  = result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
+        Boolean noticationGranted = result.getOrDefault(Manifest.permission.POST_NOTIFICATIONS, false);
+
 
         if (Boolean.FALSE.equals(cameraGranted)) {
           Toast.makeText(getContext(), getString(R.string.camera_permission_fail), Toast.LENGTH_SHORT).show();
@@ -328,16 +346,13 @@ public class HomeFragment extends Fragment {
       return;
     }
 
-    /**
-     *
-     *
-     if (incidentType.equals("Sin incidencia")) {
-     Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
-     return;
-     }
+    if (incidentType.equals("Sin incidencia ")) {
+      Toast.makeText(getContext(), getString(R.string.error_send_null_incident), Toast.LENGTH_SHORT).show();
+      return;
+    }
 
-     enviarCorreo(localitation, date, incidentType);
-     */
+
+
     uploadImageToFirebaseStorage(incidentType, localitation, date, status, incidentPercentage);
 
     spinnerIncidentType.setVisibility(View.GONE);
@@ -348,28 +363,7 @@ public class HomeFragment extends Fragment {
     imageView.setImageResource(0);
     currentPhotoPath = null;
   }
-/**
- private void enviarCorreo(String localitation, String date, String incidentType) {
 
- String correoDestino = "marcosgomezvegaportillo@gmail.com";
- String asunto = "Incidencia Reportada: " + incidentType;
- String mensaje = "Detalles de la incidencia:\n" +
- "Tipo: " + incidentType + "\n" +
- "Localización: " + localitation + "\n" +
- "Fecha: " + date + "\n";
-
- Intent intent = new Intent(Intent.ACTION_SENDTO);
- intent.setData(Uri.parse("mailto:" + Uri.encode(correoDestino))); // ← añade destinatario en URI
- intent.putExtra(Intent.EXTRA_SUBJECT, asunto);
- intent.putExtra(Intent.EXTRA_TEXT, mensaje);
-
- try {
- startActivity(intent);
- } catch (ActivityNotFoundException e) {
- Toast.makeText(getContext(), "No hay app de correo instalada", Toast.LENGTH_SHORT).show();
- }
- }
- */
 
   /**
    * Abre la cámara del dispositivo para tomar una fotografía y guarda temporalmente la imagen capturada.
@@ -394,7 +388,8 @@ public class HomeFragment extends Fragment {
   }
 
   /**
-   * Obtiene la última ubicación conocida del dispositivo y la muestra en la interfaz.
+   * Obtiene la última ubicación del dispositivo y muestra la calle, ciudad y país en el TextView.
+
    */
   private void getLastLocation() {
     FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -404,8 +399,38 @@ public class HomeFragment extends Fragment {
         if (location != null) {
           double lat = location.getLatitude();
           double lon = location.getLongitude();
-          String coords = "Lat: " + lat + ", Lon: " + lon;
-          imageViewLocalizacion.setText(coords);
+
+          Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+          try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+              Address address = addresses.get(0);
+
+              String street = address.getThoroughfare();
+              String city = address.getLocality();
+              String country = address.getCountryName();
+
+              // Fallbacks si algo es null
+              if (street == null) street = address.getAddressLine(0);
+              if (city == null) city = "";
+              if (country == null) country = "";
+
+              // Formar dirección completa
+              String fullAddress = street;
+              if (!city.isEmpty()) fullAddress += ", " + city;
+              if (!country.isEmpty()) fullAddress += ", " + country;
+
+              imageViewLocalizacion.setText(fullAddress);
+              imageViewLocalizacion.setTag(new double[]{lat, lon});
+            } else {
+              imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+            imageViewLocalizacion.setText(getString(R.string.error_having_location));
+          }
+
+
         } else {
           imageViewLocalizacion.setText(getString(R.string.location_not_enabled));
         }
@@ -431,20 +456,42 @@ public class HomeFragment extends Fragment {
       Interpreter interpreter = tfliteModel.getInterpreter();
 
       Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
+
       float[][][][] input = preprocessBitmap(scaledBitmap);
 
-      float[][] output = new float[1][4];
-      interpreter.run(input, output);
+      float[][] bboxOutput = new float[1][4];
+      float[][] classOutput = new float[1][12];
 
-      int type = argMax(output[0]);
-      float confidence = output[0][type];
+      Map<Integer, Object> outputMap = new HashMap<>();
+      outputMap.put(1, bboxOutput);
+      outputMap.put(0, classOutput);
+
+      interpreter.runForMultipleInputsOutputs(new Object[]{input}, outputMap);
+
+      int classIndex = argMax(classOutput[0]);
+      float confidence = classOutput[0][classIndex];
       confidencePercentage = (int) (confidence * 100);
 
-      String[] types = {"Grieta", "Agujero", "Poste caído", "Sin incidencia"};
-      incidentType = types[type];
+
+      String predictedClassCode = getClassCodeFromFile(getContext(), "clases_extraidas.txt", classIndex);
+      incidentType = getClassDescriptionFromFile(getContext(), "clases_extraidas.txt", predictedClassCode);
+
 
       String result = incidentType + " " + confidencePercentage + "%";
       imageViewIncidentType.setText(result);
+
+      Drawable drawable = imageView.getDrawable();
+      if (drawable instanceof BitmapDrawable) {
+        Bitmap originalBitmap = ((BitmapDrawable) drawable).getBitmap();
+
+
+        Bitmap croppedBitmap = cropBitmapWithBoundingBox(originalBitmap, bboxOutput[0]);
+        if (croppedBitmap != null) {
+
+          saveCroppedImageToFirebase(croppedBitmap);
+        }
+      }
+
 
       return confidencePercentage;
 
@@ -457,6 +504,127 @@ public class HomeFragment extends Fragment {
   }
 
   /**
+   * Recorta un bitmap usando las coordenadas del bounding box normalizadas (0 a 1).
+   *
+   * @param original Bitmap original.
+   * @param bbox     Bounding box [left, top, right, bottom] normalizado.
+   * @return Bitmap recortado o null si no es válido.
+   */
+  private Bitmap cropBitmapWithBoundingBox(Bitmap original, float[] bbox) {
+    int imageWidth = original.getWidth();
+    int imageHeight = original.getHeight();
+
+    int left = (int) (bbox[0] * imageWidth);
+    int top = (int) (bbox[1] * imageHeight);
+    int right = (int) (bbox[2] * imageWidth);
+    int bottom = (int) (bbox[3] * imageHeight);
+
+    // Limitar valores al rango de la imagen
+    left = Math.max(0, left);
+    top = Math.max(0, top);
+    right = Math.min(imageWidth, right);
+    bottom = Math.min(imageHeight, bottom);
+
+    int width = right - left;
+    int height = bottom - top;
+
+    if (width <= 0 || height <= 0) {
+      return null;
+    }
+
+    return Bitmap.createBitmap(original, left, top, width, height);
+  }
+
+  /**
+   * Guarda la imagen recortada en Firebase Storage bajo la carpeta "images/incidents_crops/"
+   *
+   * @param croppedBitmap Imagen recortada según bounding box.
+   */
+  private void saveCroppedImageToFirebase(Bitmap croppedBitmap) {
+    try {
+      File croppedFile = createImageFile();
+      FileOutputStream out = new FileOutputStream(croppedFile);
+      croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+      out.flush();
+      out.close();
+
+      Uri fileUri = Uri.fromFile(croppedFile);
+      String fileName = "images/incidents_crops/" + fileUri.getLastPathSegment();
+
+      StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
+      UploadTask uploadTask = storageRef.putFile(fileUri);
+
+      uploadTask.addOnSuccessListener(taskSnapshot ->
+        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+          String croppedImageUrl = uri.toString();
+          Log.d("FirebaseUpload", "Imagen recortada subida: " + croppedImageUrl);
+          // Opcional: Guardar URL recorte en Firestore o actualizar UI
+        })
+      ).addOnFailureListener(e ->
+        Toast.makeText(getContext(), "Error al subir imagen recortada", Toast.LENGTH_SHORT).show()
+      );
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      Toast.makeText(getContext(), "Error guardando imagen recortada", Toast.LENGTH_SHORT).show();
+    }
+  }
+
+
+  private String getClassCodeFromFile(Context context, String fileName, int index) {
+    try {
+      InputStream is = context.getAssets().open(fileName);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+      String line;
+      int currentIndex = 0;
+
+      while ((line = reader.readLine()) != null) {
+        line = line.trim();
+        if (line.isEmpty()) continue;
+        String[] parts = line.split("-");
+        if (parts.length > 0) {
+          String code = parts[0].trim();
+          if (currentIndex == index) {
+            reader.close();
+            return code;
+          }
+          currentIndex++;
+        }
+      }
+
+      reader.close();
+    } catch (IOException e) {
+    }
+
+    return "Desconocido";
+  }
+
+
+  private String getClassDescriptionFromFile(Context context, String fileName, String classCode) {
+    try {
+      InputStream is = context.getAssets().open(fileName);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        line = line.trim();
+        if (line.startsWith(classCode)) {
+          int sepIndex = line.indexOf("-");
+          if (sepIndex != -1 && sepIndex + 1 < line.length()) {
+            return line.substring(sepIndex + 1).trim();
+          } else {
+            return line;
+          }
+        }
+      }
+      reader.close();
+    } catch (IOException e) {
+    }
+    return "Clase desconocida";
+  }
+
+
+  /**
+
    * Preprocesa el bitmap para adaptarlo al formato requerido por el modelo TensorFlow Lite.
    *
    * @param bitmap Imagen escalada a 224x224 píxeles.
@@ -521,7 +689,8 @@ public class HomeFragment extends Fragment {
    * Guarda la información de una incidencia en Firestore, incluyendo usuario, tipo, localización, foto, fecha y estado.
    *
    * @param incidentType       Tipo de incidencia detectado o seleccionado.
-   * @param localitation       Coordenadas de la ubicación donde se detectó la incidencia.
+   * @param localitation       Calle legible de la ubicación donde se detectó la incidencia.
+
    * @param imageUrl           Ruta local de la imagen capturada.
    * @param date               Fecha y hora del registro.
    * @param status             Estado inicial de la incidencia.
@@ -541,14 +710,19 @@ public class HomeFragment extends Fragment {
       incidentData.put("status", status);
       incidentData.put("error_percentage", incidentPercentage);
 
+
+      Object tag = imageViewLocalizacion.getTag();
+      if (tag instanceof double[]) {
+        double[] coords = (double[]) tag;
+        String coordString = "Lat: " + coords[0] + ", Lon: " + coords[1];
+        incidentData.put("coordinates", coordString);
+      }
+
+
       db.collection("incidents")
         .add(incidentData)
         .addOnSuccessListener(documentReference -> {
-          String incidentId = documentReference.getId();
-
-          incidentData.put("uid", incidentId);
-
-          documentReference.update("uid", incidentId)
+          String incidentId = documentReference.getId();)
             .addOnSuccessListener(aVoid ->
               Toast.makeText(getContext(), getString(R.string.incident_send_well), Toast.LENGTH_SHORT).show()
             )

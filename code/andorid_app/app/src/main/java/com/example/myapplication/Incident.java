@@ -10,6 +10,9 @@ public class Incident {
   private String date;
   private String status;
   private String userID;
+  private String coordinates;
+
+
 
   public Incident() {}
 
@@ -62,4 +65,6 @@ public class Incident {
   public void setUserId(String userID) {
     this.userID = userID;
   }
-}
+
+  public String getCoordinates() {return coordinates;}
+

@@ -35,9 +35,11 @@ import com.example.myapplication.ui.config.manager.EmailManager;
 import com.example.myapplication.ui.config.manager.PasswordManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -287,16 +289,25 @@ public class ConfigFragment extends Fragment {
    * Abre el diálogo para cambiar el correo electrónico del usuario.
    */
   private void pushBtnChangeEmail() {
-    EmailManager emailManager = new EmailManager(requireContext(), getLayoutInflater());
-    emailManager.showChangeEmailDialog();
+    boolean isGoogleUser = checkLoginGoogle();
+    if (!isGoogleUser) {
+      EmailManager emailManager = new EmailManager(requireContext(), getLayoutInflater());
+      emailManager.showChangeEmailDialog();
+    }
+
   }
 
   /**
    * Abre el diálogo para cambiar la contraseña del usuario.
    */
   private void pushBtnChangePassword() {
-    PasswordManager passwordManager = new PasswordManager(requireContext(), getLayoutInflater());
-    passwordManager.showChangePasswordDialog();
+    boolean isGoogleUser = checkLoginGoogle();
+    if (!isGoogleUser){
+      PasswordManager passwordManager = new PasswordManager(requireContext(), getLayoutInflater());
+      passwordManager.showChangePasswordDialog();
+    }
+
+
   }
 
   /**
@@ -330,6 +341,24 @@ public class ConfigFragment extends Fragment {
       new ActivityResultContracts.GetContent(),
       uri -> avatarManager.handleGalleryResult(uri)
     );
+  }
+
+  public boolean checkLoginGoogle(){
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    boolean isGoogleUser = false;
+    List<? extends UserInfo> providerData = user.getProviderData();
+    for (UserInfo info : providerData) {
+      if ("google.com".equals(info.getProviderId())) {
+        isGoogleUser = true;
+        break;
+      }
+    }
+
+    if (isGoogleUser) {
+      Toast.makeText(getContext(), getString(R.string.toast_google_change_email_or_paswword_not_supported), Toast.LENGTH_LONG).show();
+    }
+    return isGoogleUser;
   }
 
 }

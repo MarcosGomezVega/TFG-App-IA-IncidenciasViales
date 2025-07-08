@@ -12,6 +12,10 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
+
+import java.util.List;
+
 
 public class PasswordManager {
 
@@ -22,7 +26,6 @@ public class PasswordManager {
     this.context = context;
     this.inflater = inflater;
   }
-
 
   /**
    * Muestra un diálogo personalizado para que el usuario pueda cambiar su contraseña.
@@ -40,7 +43,10 @@ public class PasswordManager {
     EditText edtNewPassword = view.findViewById(R.id.edtNewPassword);
     EditText edtConfirmNewPassword = view.findViewById(R.id.edtConfirmNewPassword);
 
-    builder.setPositiveButton(context.getString(R.string.change), (dialog, which) -> pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword));
+    builder.setPositiveButton(context.getString(R.string.change), (dialog, which) ->
+      pushBtnChangePassword(edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword)
+    );
+
     builder.setNegativeButton(context.getString(R.string.button_cancel), null);
 
     AlertDialog dialog = builder.create();
@@ -49,8 +55,8 @@ public class PasswordManager {
   }
 
   /**
-   * Gestiona la lógica para cambiar la contraseña del usuario,
-   * realizando validaciones y autenticación antes de actualizar.
+   * Gestiona la lógica para cambiar la contraseña del usuario.
+   * Verifica que los datos sean válidos, reautentica al usuario y luego actualiza la contraseña.
    *
    * @param edtEmail              Campo con el correo electrónico.
    * @param edtCurrentPassword    Campo con la contraseña actual.
@@ -74,23 +80,26 @@ public class PasswordManager {
     }
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-    if (user != null) {
-      AuthCredential credential = EmailAuthProvider.getCredential(email, currentPassword);
-      user.reauthenticate(credential).addOnCompleteListener(task -> {
-        if (task.isSuccessful()) {
-
-          user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
-            if (updateTask.isSuccessful()) {
-              Toast.makeText(context, context.getString(R.string.toast_password_updated_success), Toast.LENGTH_SHORT).show();
-            } else {
-              Toast.makeText(context, context.getString(R.string.toast_password_update_failed), Toast.LENGTH_SHORT).show();
-            }
-          });
-        } else {
-          Toast.makeText(context, context.getString(R.string.toast_error_reauthenticating), Toast.LENGTH_SHORT).show();
-        }
-      });
+    if (user == null || !user.getEmail().equals(email)) {
+      Toast.makeText(context, context.getString(R.string.toast_current_email_not_match), Toast.LENGTH_SHORT).show();
+      return;
     }
+
+
+    AuthCredential credential = EmailAuthProvider.getCredential(email, currentPassword);
+    user.reauthenticate(credential).addOnCompleteListener(task -> {
+      if (task.isSuccessful()) {
+        user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+          if (updateTask.isSuccessful()) {
+            Toast.makeText(context, context.getString(R.string.toast_password_updated_success), Toast.LENGTH_SHORT).show();
+          } else {
+            Toast.makeText(context, context.getString(R.string.toast_password_update_failed), Toast.LENGTH_SHORT).show();
+          }
+        });
+      } else {
+        Toast.makeText(context, context.getString(R.string.toast_error_reauthenticating), Toast.LENGTH_SHORT).show();
+      }
+    });
+
   }
 }

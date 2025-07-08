@@ -6,13 +6,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.text.Html;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 import android.view.View;
 
@@ -26,9 +27,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,10 +36,12 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Actividad de inicio de sesión que permite al usuario iniciar sesión con su correo electrónico y contraseña.
+ * Actividad de inicio de sesión que permite al usuario iniciar sesión con su correo electrónico y contraseña
+ * o mediante cuenta de Google.
+ * Aplica el idioma preferido del usuario tras iniciar sesión correctamente.
  *
  * @author Marcos Gomez Vega
- * @version 1.0
+ * @version 1.1
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -56,11 +57,11 @@ public class LoginActivity extends AppCompatActivity {
    * @param savedInstanceState Si la actividad está siendo reinicializada después de haber sido cerrada previamente,
    *                           este Bundle contiene los datos más recientes. De lo contrario, es nulo.
    */
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
-
 
     GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
       .requestIdToken(getString(R.string.default_web_client_id))
@@ -92,6 +93,7 @@ public class LoginActivity extends AppCompatActivity {
   /**
    * Inicia el proceso de inicio de sesión con Google.
    * Lanza la actividad proporcionada por GoogleSignInClient para que el usuario seleccione una cuenta.
+
    */
   private void pushBtnGoogle() {
     Intent intent = googleSignInClient.getSignInIntent();
@@ -116,22 +118,21 @@ public class LoginActivity extends AppCompatActivity {
   }
 
   /**
-   * Autentica al usuario con Firebase utilizando la cuenta de Google obtenida.
-   * Si el usuario es nuevo, crea un registro en Firestore con sus datos.
+   * Autentica al usuario con Firebase usando las credenciales de Google.
+   * Si es un nuevo usuario, lo registra en Firestore. Si ya existe, carga su idioma.
    *
-   * @param account Cuenta de Google obtenida tras el inicio de sesión exitoso.
+   * @param account Cuenta de Google autenticada.
    */
   private void firebaseAuthWithGoogleAcount(GoogleSignInAccount account) {
-
     AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
     mAuth.signInWithCredential(credential)
       .addOnSuccessListener(authResult -> {
-
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String uid = firebaseUser.getUid();
 
         if (authResult.getAdditionalUserInfo().isNewUser()) {
 
-          String uid = firebaseUser.getUid();
           String name = firebaseUser.getDisplayName();
           String email = firebaseUser.getEmail();
           String photoUrl = (firebaseUser.getPhotoUrl() != null) ? firebaseUser.getPhotoUrl().toString() : "";
@@ -141,7 +142,6 @@ public class LoginActivity extends AppCompatActivity {
             langCode = "en";
           }
 
-
           Map<String, Object> user = new HashMap<>();
           user.put("name", name);
           user.put("email", email);
@@ -149,47 +149,50 @@ public class LoginActivity extends AppCompatActivity {
           user.put("avatar", photoUrl);
           user.put("language", langCode);
 
-          FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+          String finalLangCode = langCode;
           db.collection("users").document(uid).set(user)
             .addOnSuccessListener(aVoid -> {
+              setLocal(this, finalLangCode);
+
               Toast.makeText(this, "Cuenta de Google creada con éxito", Toast.LENGTH_SHORT).show();
               startActivity(new Intent(this, MainActivity.class));
               finish();
             });
 
         } else {
-          startActivity(new Intent(this, MainActivity.class));
-          finish();
-        }
 
+          loadLanguageAndLaunchMain(firebaseUser);
+        }
       })
-      .addOnFailureListener(e -> Toast.makeText(this,  "Fallo en autenticación con Google" , Toast.LENGTH_SHORT).show());
+      .addOnFailureListener(e -> Toast.makeText(this, "Fallo en autenticación con Google", Toast.LENGTH_SHORT).show());
   }
 
   /**
-   * Llamado después de onCreate() o después de que la actividad haya sido detenida y se esté reiniciando.
-   * Verifica si ya hay usuarios registrados; si es así, redirige a la actividad principal y actuliza el lastLogin.
+   * Aplica la configuración regional (idioma) para la actividad.
+   *
+   * @param activity Actividad actual
+   * @param langCode Código del idioma ("es", "en", etc.)
+   */
+  public void setLocal(Activity activity, String langCode) {
+    Locale locale = new Locale(langCode);
+    Locale.setDefault(locale);
+
+    Resources resources = activity.getResources();
+    Configuration configuration = resources.getConfiguration();
+    configuration.setLocale(locale);
+    resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+  }
+
+  /**
+   * Verifica si hay un usuario ya autenticado y lo redirige si es necesario, aplicando el idioma guardado.
    */
   @Override
   protected void onStart() {
     super.onStart();
-
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
     if (currentUser != null) {
-      FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-      if (user != null) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String uid = user.getUid();
+      loadLanguageAndLaunchMain(currentUser);
 
-        Map<String, Object> update = new HashMap<>();
-        String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-        update.put("lastLogin", currentDateTime);
-
-        db.collection("users").document(uid).update(update);
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-        finish();
-      }
     }
   }
 
@@ -207,33 +210,26 @@ public class LoginActivity extends AppCompatActivity {
     String password = editTextPassword.getText().toString().trim();
 
     if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-      Toast.makeText(LoginActivity.this,  getString(R.string.gaps_empty), Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this, getString(R.string.gaps_empty), Toast.LENGTH_SHORT).show();
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-      Toast.makeText(LoginActivity.this, getString(R.string.invalid_email) , Toast.LENGTH_SHORT).show();
+      Toast.makeText(LoginActivity.this, getString(R.string.invalid_email), Toast.LENGTH_SHORT).show();
+
     } else {
       mAuth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener(this, task -> {
           if (task.isSuccessful()) {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
-              FirebaseFirestore db = FirebaseFirestore.getInstance();
-              String uid = user.getUid();
-
-              Map<String, Object> update = new HashMap<>();
-              String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-              update.put("lastLogin", currentDateTime);
-
-              db.collection("users").document(uid).update(update);
+              loadLanguageAndLaunchMain(user);
             }
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
           } else {
-            Toast.makeText(LoginActivity.this,  getString(R.string.email_passwd_dont_match) , Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, getString(R.string.email_passwd_dont_match), Toast.LENGTH_SHORT).show();
+
           }
         });
     }
   }
+
 
 
   /**
@@ -247,7 +243,38 @@ public class LoginActivity extends AppCompatActivity {
     startActivity(intent);
   }
 
+  /**
+   * Carga el idioma guardado del usuario, actualiza lastLogin,
+   * aplica el idioma y lanza MainActivity.
+   *
+   * @param user Usuario autenticado de Firebase
+   */
+  private void loadLanguageAndLaunchMain(FirebaseUser user) {
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    String uid = user.getUid();
 
+    String currentDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+    db.collection("users").document(uid).update("lastLogin", currentDateTime);
 
+    db.collection("users").document(uid).get()
+      .addOnSuccessListener(documentSnapshot -> {
+        String lang = "es";
+        if (documentSnapshot.exists()) {
+          String savedLang = documentSnapshot.getString("language");
+          if (savedLang != null && (savedLang.equals("es") || savedLang.equals("en"))) {
+            lang = savedLang;
+          }
+        }
+
+        setLocal(this, lang);
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+      })
+      .addOnFailureListener(e -> {
+        setLocal(this, "es");
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+      });
+  }
 
 }

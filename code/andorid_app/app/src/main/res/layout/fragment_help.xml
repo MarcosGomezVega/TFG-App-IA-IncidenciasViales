@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context=".HelpFragment"
+  android:background="@color/primaryContainer">
+
+  <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical">
+
+      <TextView
+        android:id="@+id/title_help"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_help"
+        android:textColor="@color/black"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp"/>
+
+      <TextView
+        android:id="@+id/desc_help"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_help"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:paddingBottom="16dp"/>
+
+      <TextView
+        android:id="@+id/title_deformaciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_deformaciones"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp"/>
+
+      <TextView
+        android:id="@+id/item_hundimiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_hundimiento"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_hundimiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_hundimiento"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_hundimiento"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/hundimiento" />
+
+      <TextView
+        android:id="@+id/item_blandones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_blandones"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_blandones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_blandones"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_blandones"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/blandones" />
+
+      <TextView
+        android:id="@+id/item_firme_ondulado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_firme_ondulado"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_firme_ondulado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_firme_ondulado"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_firme_ondulado"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/firme_ondulado" />
+
+      <TextView
+        android:id="@+id/item_protuberancias"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_protuberancias"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_protuberancias"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_protuberancias"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_protuberancias"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/protuberancias" />
+
+      <TextView
+        android:id="@+id/item_escalonamiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_escalonamiento"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_escalonamiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_escalonamiento"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_escalonamiento"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/escalonamiento" />
+
+      <TextView
+        android:id="@+id/item_agujero"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_agujero"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"/>
+      <TextView
+        android:id="@+id/desc_agujero"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_agujero"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp"/>
+      <ImageView
+        android:id="@+id/img_agujero"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/agujero" />
+
+      <TextView
+        android:id="@+id/title_roturas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_roturas"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingTop="24dp"
+        android:paddingBottom="8dp" />
+
+      <TextView
+        android:id="@+id/item_grieta_longitudinal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_grieta_longitudinal"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_grieta_longitudinal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_grieta_longitudinal"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_grieta_longitudinal"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/grieta_longitudinal" />
+
+      <TextView
+        android:id="@+id/item_grieta_longitud_junta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_grieta_longitud_junta"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_grieta_longitud_junta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_grieta_longitud_junta"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_grieta_longitud_junta"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/grieta_longitud_junta" />
+
+      <TextView
+        android:id="@+id/item_grieta_transversal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_grieta_transversal"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_grieta_transversal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_grieta_transversal"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_grieta_transversal"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/grieta_transversal" />
+
+
+
+      <TextView
+        android:id="@+id/item_grieta_longitud_fisura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_grieta_longitud_fisura"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_grieta_longitud_fisura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_grieta_longitud_fisura"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_grieta_longitud_fisura"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/grieta_longitud_fisura" />
+
+      <TextView
+        android:id="@+id/item_grieta_cuña"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_grieta_cocodrilo"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_grieta_cuña"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_grieta_cocodrilo"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_grieta_cuña"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/cocodrilo" />
+
+      <TextView
+        android:id="@+id/title_otras"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_otras"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingTop="24dp"
+        android:paddingBottom="8dp" />
+
+      <TextView
+        android:id="@+id/item_alcantarillas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_alcantarillas"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_alcantarillas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_alcantarillas"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_alcantarillas"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/alcantarillas" />
+
+      <TextView
+        android:id="@+id/item_senalizacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_senalizacion"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="24dp"
+        android:paddingBottom="4dp" />
+      <TextView
+        android:id="@+id/desc_senalizacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/desc_senalizacion"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+      <ImageView
+        android:id="@+id/img_senalizacion"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/senalizacion" />
+
+    </LinearLayout>
+  </ScrollView>
+
+</FrameLayout>

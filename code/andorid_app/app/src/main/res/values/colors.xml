@@ -25,6 +25,9 @@
 
   <color name="colorAccent">#9C4DFF</color>
 
+  <color name="back_home">#66FFFFFF</color>
+
+
   <color name="red">#FF0202</color>
   <color name="yellow">#F8B200</color>
   <color name="green">#158A00</color>

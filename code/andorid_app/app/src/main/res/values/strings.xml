@@ -146,4 +146,101 @@
     <item>Ingles</item>
   </string-array>
 
+  <string name="info_label_version">Versión: </string>
+  <string name="info_value_version">1.1.0</string>
+  <string name="info_label_developer">Desarrollador: </string>
+  <string name="info_value_developer">Marcos Gómez Vega</string>
+  <string name="info_label_contact">Contacto: </string>
+  <string name="info_value_contact">mgv1017@alu.ubu.es</string>
+  <string name="info_description"> Esta app permite detectar los distintos tipos de incidencias que hay en la vía según los estándares de los ingenieros de caminos mediante IA, para que el ayuntamiento y las autoridades puedan ser conscientes de estos desperfectos y arreglarlos. Además, puedes ver el listado de tus incidencias, su estado y un mapa con las incidencias reportadas por otros usuarios.</string>
+  <string name="terms_title">Términos y Condiciones</string>
+  <string name="terms_point_1">1. Propósito de la aplicación: La app permite subir fotos de desperfectos urbanos, geolocalizarlos y clasificarlos para notificar a las autoridades locales.</string>
+  <string name="terms_point_2">2. Uso responsable: El usuario acepta subir solo imágenes reales y actuales, sin contenido ofensivo ni falso, y no usar la app con fines ilegales.</string>
+  <string name="terms_point_3">3. Geolocalización: Se usa únicamente para posicionar correctamente la incidencia. Esta información no se comparte con terceros salvo las autoridades locales.</string>
+  <string name="terms_point_4">4. Propiedad intelectual: Las imágenes subidas pueden usarse con fines informativos y estadísticos. El usuario concede una licencia gratuita, no exclusiva y perpetua.</string>
+  <string name="terms_point_5">5. Exención de responsabilidad: La app actúa como intermediaria. No garantiza que las autoridades atiendan todas las incidencias reportadas.</string>
+  <string name="terms_point_6">6. Modificaciones: Estos términos pueden cambiar. Las actualizaciones estarán disponibles en la app.</string>
+  <string name="description_title">Descripcion de la App</string>
+
+
+  <string name="toast_google_change_email_or_paswword_not_supported">No puedes cambiar tu correo o contraseña si iniciaste sesión con Google.</string>
+  <string name="toast_verify_new_email">Verifica el nuevo correo para completar el cambio. Se ha enviado un correo de verificación.</string>
+  <string name="toast_error_send_verification">Error al enviar el correo de verificación.</string>
+  <string name="toast_reauth_failed">La reautenticación ha fallado. Verifica tu contraseña.</string>
+
+
+  <string name="nav_help">Ayuda</string>
+
+  <string-array name="incidents_array">
+    <item>Seleccione una incidencia ...</item>
+
+
+    <item>Deformaciones y desplazamientos</item>
+    <item>Hundimiento</item>
+    <item>Blandones</item>
+    <item>Firme ondulado</item>
+    <item>Protuberancias</item>
+    <item>Escalonamiento</item>
+    <item>Agujero</item>
+
+    <item>Grieta longitudinal</item>
+    <item>Grieta longitudinal en junta de construcción</item>
+    <item>Grieta transversal</item>
+    <item>Grieta transversal en junta de construcción</item>
+    <item>Grieta piel de cocodrilo</item>
+
+    <item>Alcantarillas</item>
+    <item>Señalización horizontal deteriorada</item>
+  </string-array>
+
+
+  <string name="title_deformaciones">Deformaciones y desprendimiento</string>
+  <string name="title_roturas">Roturas</string>
+  <string name="title_otras">Otras incidencias</string>
+
+
+  <string name="item_hundimiento">Hundimiento</string>
+  <string name="desc_hundimiento">Depresión o bajada localizada en el pavimento, causada por asentamientos o falta de soporte.</string>
+
+  <string name="item_blandones">Blandones</string>
+  <string name="desc_blandones">Áreas blandas en el pavimento que pueden hundirse bajo carga debido a fallos en la base o subrasante.</string>
+
+  <string name="item_firme_ondulado">Firme ondulado</string>
+  <string name="desc_firme_ondulado">Ondulaciones visibles en la superficie del pavimento, que afectan la comodidad de la conducción.</string>
+
+  <string name="item_protuberancias">Protuberancias</string>
+  <string name="desc_protuberancias">Elevaciones puntuales en el pavimento, a menudo causadas por raíces o deformaciones internas.</string>
+
+  <string name="item_escalonamiento">Escalonamiento</string>
+  <string name="desc_escalonamiento">Diferencia de nivel entre dos superficies adyacentes, generalmente en juntas o reparaciones.</string>
+
+  <string name="item_agujero">Agujero</string>
+  <string name="desc_agujero">Hueco o cavidad formada en el pavimento debido a desprendimiento o desgaste severo.</string>
+
+  <string name="item_grieta_longitudinal">Grieta longitudinal</string>
+  <string name="desc_grieta_longitudinal">Fisura que corre paralela al eje de la carretera, causada por tensiones internas o deformaciones.</string>
+
+  <string name="item_grieta_longitud_junta">Grieta longitudinal en junta de construcción</string>
+  <string name="desc_grieta_longitud_junta">Fisura que aparece a lo largo de la junta donde se unen dos pavimentos construidos en diferentes tiempos.</string>
+
+  <string name="item_grieta_transversal">Grieta transversal</string>
+  <string name="desc_grieta_transversal">Fisura perpendicular al eje de la carretera, provocada por movimientos térmicos o asentamientos diferenciales.</string>
+
+  <string name="item_grieta_cocodrilo">Piel de cocodrilo</string>
+  <string name="desc_grieta_cocodrilo">Conjunto de grietas interconectadas que forman un patrón similar a la piel de un cocodrilo. Generalmente indica una fatiga estructural en capas inferiores del pavimento.</string>
+
+  <string name="item_grieta_longitud_fisura">Grieta longitudinal en fisura longitudinal</string>
+  <string name="desc_grieta_longitud_fisura">Fisura longitudinal secundaria que se desarrolla dentro de una fisura principal.</string>
+
+
+  <string name="item_alcantarillas">Alcantarillas</string>
+  <string name="desc_alcantarillas">Estructuras para drenaje de aguas pluviales que pueden presentar daños o bloqueos.</string>
+
+  <string name="item_senalizacion">Señalización horizontal deteriorada</string>
+  <string name="desc_senalizacion">Desgaste o desaparición de marcas viales en el pavimento que afectan la seguridad vial.</string>
+
+  <string name="title_help">Ayuda</string>
+  <string name="desc_help">Esta sección tiene como objetivo ayudarte a identificar correctamente el tipo de incidencia. Dado que el modelo de inteligencia artificial aún está en fase beta y puede no ser completamente preciso, te recomendamos que selecciones manualmente el tipo de incidencia si estás seguro de cuál es. A continuación, te mostramos ejemplos de las incidencias que puedes encontrar.</string>
+
+
 </resources>

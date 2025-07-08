@@ -3,6 +3,20 @@ const {logger} = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
+
+// Diccionario de traducciones
+const translations = {
+  es: {
+    title: "Incidente actualizado",
+    body: (status) => `El estado de un incidente cambió a: ${status}`,
+  },
+  en: {
+    title: "Incident updated",
+    body: (status) => `The status of an incident changed to: ${status}`,
+  },
+};
+
+
 exports.onIncidentStatusChange = onDocumentUpdated(
     {
       document: "incidents/{incidentId}",
@@ -11,6 +25,7 @@ exports.onIncidentStatusChange = onDocumentUpdated(
       const before = event.data.before.data();
       const after = event.data.after.data();
       const incidentId = event.params.incidentId;
+
       if (!before || !after) {
         logger.warn("Datos 'before' o 'after' no disponibles");
         return;
@@ -24,12 +39,31 @@ exports.onIncidentStatusChange = onDocumentUpdated(
           return;
         }
 
-        logger.info(`Status del incidente ${incidentId}
-           cambió de ${before.status} a ${after.status}. 
-           Enviando notificación al usuario ${uid}`);
+
+        logger.info(
+            `Status del incidente ${incidentId} 
+            cambió de ${before.status} a ${after.status}.
+            Enviando notificación al usuario ${uid}`,
+        );
 
         try {
-          const tokensSnapshot = await admin.firestore()
+          // Obtener idioma del usuario
+          const userDoc = await admin.firestore()
+              .collection("users")
+              .doc(uid).get();
+          if (!userDoc.exists) {
+            logger.warn(`Usuario ${uid} no encontrado`);
+            return;
+          }
+
+          const userLang = userDoc.data().language || "es";
+          const lang = ["es", "en"].includes(userLang) ? userLang : "es";
+          const translation = translations[lang];
+
+          // Obtener tokens del usuario
+          const tokensSnapshot = await admin
+              .firestore()
+
               .collection("device_tokens")
               .where("userId", "==", uid)
               .where("notification_activated", "==", true)
@@ -48,19 +82,25 @@ exports.onIncidentStatusChange = onDocumentUpdated(
             logger.info(`No hay tokens válidos para el usuario ${uid}`);
             return;
           }
+
+
+
           logger.info(`Tokens a los que se enviará la notificación: ${tokens}`);
 
           const message = {
             notification: {
-              title: "Incidente actualizado",
-              body: `El estado de un incidente cambió a: ${after.status}`,
+
+              title: translation.title,
+              body: translation.body(after.status),
+
             },
             tokens: tokens,
           };
 
-          const response = await admin.
-              messaging().
-              sendEachForMulticast(message);
+
+          const response = await admin.messaging()
+              .sendEachForMulticast(message);
+
           logger.info("Notificación enviada con éxito:", response);
         } catch (error) {
           logger.error("Error enviando notificación:", error);
